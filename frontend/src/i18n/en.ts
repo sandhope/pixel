@@ -134,6 +134,12 @@ const en: LocaleMessages = {
   // themes
   'theme.dark': 'Dark',
   'theme.light': 'Light',
+  // title bar
+  'titlebar.about': 'About',
+  'titlebar.settings': 'Settings',
+  'titlebar.minimize': 'Minimize',
+  'titlebar.maximize': 'Maximize / Restore',
+  'titlebar.close': 'Close',
 }
 
 export default en

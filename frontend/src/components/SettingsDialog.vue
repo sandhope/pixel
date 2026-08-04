@@ -34,7 +34,6 @@
         </div>
       </div>
       <div class="settings-footer">
-        <button class="about-btn" @click="$emit('openAbout')">{{ t('settings.about') }}</button>
         <button class="done-btn" @click="close">{{ t('settings.close') }}</button>
       </div>
     </div>
@@ -47,7 +46,7 @@ import type { Locale } from '@/i18n'
 import { useTheme } from '@/composables/useTheme'
 
 defineProps<{ visible: boolean }>()
-const emit = defineEmits<{ close: [], openAbout: [] }>()
+const emit = defineEmits<{ close: [] }>()
 
 const { current, themes, apply } = useTheme()
 
@@ -170,22 +169,9 @@ function changeLang(l: Locale) {
 .settings-footer {
   padding: 14px 20px 18px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   border-top: 1px solid var(--border);
-}
-.about-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 7px 16px;
-  border-radius: 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.about-btn:hover {
-  border-color: var(--primary);
-  color: var(--fg);
 }
 .done-btn {
   background: var(--primary);

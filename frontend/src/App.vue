@@ -1,6 +1,7 @@
 <template>
   <div class="app-root">
-    <Toolbar @open-settings="showSettings = true" />
+    <TitleBar @open-settings="showSettings = true" @open-about="showAbout = true" />
+    <Toolbar />
     <div class="body">
       <aside class="left-pane">
         <ShapePanel />
@@ -12,13 +13,14 @@
         <RightPanel />
       </aside>
     </div>
-    <SettingsDialog :visible="showSettings" @close="showSettings = false" @open-about="showSettings = false; showAbout = true" />
+    <SettingsDialog :visible="showSettings" @close="showSettings = false" />
     <AboutDialog v-if="showAbout" @close="showAbout = false" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import TitleBar from '@/components/TitleBar.vue'
 import Toolbar from '@/components/Toolbar.vue'
 import ShapePanel from '@/components/ShapePanel.vue'
 import EditorCanvas from '@/components/EditorCanvas.vue'

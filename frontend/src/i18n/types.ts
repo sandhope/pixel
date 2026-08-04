@@ -134,4 +134,10 @@ export interface LocaleMessages {
   // themes
   'theme.dark': string
   'theme.light': string
+  // title bar (custom window title bar)
+  'titlebar.about': string
+  'titlebar.settings': string
+  'titlebar.minimize': string
+  'titlebar.maximize': string
+  'titlebar.close': string
 }

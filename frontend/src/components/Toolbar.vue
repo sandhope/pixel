@@ -1,12 +1,5 @@
 <template>
   <header class="toolbar">
-    <div class="brand">
-      <div class="logo"></div>
-      <div class="brand-text">
-        <div class="title">{{ t('app.title') }}</div>
-        <div class="sub">{{ t('app.subtitle') }}</div>
-      </div>
-    </div>
     <div class="actions">
       <button class="tb" @click="undo" :disabled="!editor.canUndo" :title="t('toolbar.undo.tip')">{{ t('toolbar.undo') }}</button>
       <button class="tb" @click="redo" :disabled="!editor.canRedo" :title="t('toolbar.redo.tip')">{{ t('toolbar.redo') }}</button>
@@ -36,8 +29,6 @@
       <span class="dot"></span>
       <span>{{ editor.shapeCount }} {{ t('toolbar.layers') }}</span>
       <span v-if="busy" class="busy">{{ t('toolbar.processing') }}</span>
-      <span class="sep"></span>
-      <button class="tb" @click="$emit('openSettings')" :title="t('toolbar.settings')">⚙</button>
     </div>
   </header>
 </template>
@@ -48,8 +39,6 @@ import { useEditorStore } from '@/store/editor'
 import { svgToPngDataUrl } from '@/utils/svgToPng'
 import { callBackend } from '@/wails/bindings'
 import { t } from '@/i18n'
-
-defineEmits<{ openSettings: [] }>()
 
 const editor = useEditorStore()
 const exportScale = ref(2)
@@ -158,37 +147,14 @@ function toast(msg: string) {
 
 <style scoped>
 .toolbar {
-  height: 56px;
+  height: 48px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 0 16px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   color: var(--fg);
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 220px;
-}
-.logo {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background:
-    conic-gradient(from 220deg at 50% 50%, #6366f1, #ec4899, #f59e0b, #10b981, #06b6d4, #6366f1);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.06), 0 6px 20px -6px rgba(99, 102, 241, 0.8);
-}
-.brand-text .title {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-}
-.brand-text .sub {
-  font-size: 11px;
-  color: var(--text-muted);
 }
 
 .actions {

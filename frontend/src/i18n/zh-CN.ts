@@ -134,6 +134,12 @@ const zhCN: LocaleMessages = {
   // themes
   'theme.dark': '深色',
   'theme.light': '浅色',
+  // title bar
+  'titlebar.about': '关于',
+  'titlebar.settings': '设置',
+  'titlebar.minimize': '最小化',
+  'titlebar.maximize': '最大化 / 还原',
+  'titlebar.close': '关闭',
 }
 
 export default zhCN
