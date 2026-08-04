@@ -8,6 +8,8 @@
  *    - 另：SavePngDataUrl 触发 <a download> 下载
  */
 
+import { t } from '@/i18n'
+
 export interface BackendApi {
   SavePngDataUrl(dataUrl: string, suggestedName: string): Promise<string | null>
   SaveSvg(svgContent: string, suggestedName: string): Promise<string | null>
@@ -36,7 +38,7 @@ export async function callBackend<K extends keyof BackendApi>(
 ): Promise<Awaited<ReturnType<BackendApi[K]>>> {
   if (hasWailsBackend()) {
     const fn = window.go!.main!.App![method] as any
-    if (typeof fn !== 'function') throw new Error(`后端未实现: ${method}`)
+    if (typeof fn !== 'function') throw new Error(`${t('err.backendNotImpl')} ${method}`)
     return (fn as Function)(...(args as any[]))
   }
   return (fallback as any)[method](...args)

@@ -5,12 +5,14 @@
  * 注意：为避免浏览器因 SVG 缺少 xmlns 导致 Image.decode 失败，
  *       这里会确保 SVG 字符串的根节点带 xmlns="http://www.w3.org/2000/svg"
  */
+import { t } from '@/i18n'
+
 export async function svgToPngDataUrl(
   svgStr: string,
   scale = 2,
 ): Promise<{ dataUrl: string; width: number; height: number }> {
   const { width, height } = parseSvgSize(svgStr)
-  if (width <= 0 || height <= 0) throw new Error('无法获取 SVG 尺寸')
+  if (width <= 0 || height <= 0) throw new Error(t('err.svgSize'))
 
   const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
   const url = URL.createObjectURL(svgBlob)
@@ -40,7 +42,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve(img)
-    img.onerror = (e) => reject(new Error('SVG 加载失败，请检查图形是否包含不支持的内容：' + String(e)))
+    img.onerror = (e) => reject(new Error(t('err.svgLoadFail') + String(e)))
     // 允许加载 SVG blob
     img.crossOrigin = 'anonymous'
     img.src = src

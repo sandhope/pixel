@@ -3,20 +3,20 @@
     <div class="brand">
       <div class="logo"></div>
       <div class="brand-text">
-        <div class="title">Pixel Logo Studio</div>
-        <div class="sub">搭积木式 Logo 编辑器</div>
+        <div class="title">{{ t('app.title') }}</div>
+        <div class="sub">{{ t('app.subtitle') }}</div>
       </div>
     </div>
     <div class="actions">
-      <button class="tb" @click="undo" :disabled="!editor.canUndo" title="撤销 (Ctrl+Z)">↶ 撤销</button>
-      <button class="tb" @click="redo" :disabled="!editor.canRedo" title="重做 (Ctrl+Y)">↷ 重做</button>
+      <button class="tb" @click="undo" :disabled="!editor.canUndo" :title="t('toolbar.undo.tip')">{{ t('toolbar.undo') }}</button>
+      <button class="tb" @click="redo" :disabled="!editor.canRedo" :title="t('toolbar.redo.tip')">{{ t('toolbar.redo') }}</button>
       <span class="sep"></span>
-      <button class="tb" @click="duplicate" :disabled="editor.selectedShapes.length===0" title="复制 (Ctrl+D)">⧉ 复制</button>
-      <button class="tb danger" @click="editor.deleteSelection()" :disabled="editor.selectedShapes.length===0" title="删除 (Del)">🗑 删除</button>
+      <button class="tb" @click="duplicate" :disabled="editor.selectedShapes.length===0" :title="t('toolbar.duplicate.tip')">{{ t('toolbar.duplicate') }}</button>
+      <button class="tb danger" @click="editor.deleteSelection()" :disabled="editor.selectedShapes.length===0" :title="t('toolbar.delete.tip')">{{ t('toolbar.delete') }}</button>
       <span class="sep"></span>
-      <button class="tb" @click="openProject" title="打开项目 (.pixel.json)">📂 打开</button>
-      <button class="tb" @click="saveProject" title="保存项目">💾 存项目</button>
-      <button class="tb" @click="editor.resetAll()" title="清空画布">✕ 清空</button>
+      <button class="tb" @click="openProject" :title="t('toolbar.open.tip')">{{ t('toolbar.open') }}</button>
+      <button class="tb" @click="saveProject" :title="t('toolbar.save.tip')">{{ t('toolbar.save') }}</button>
+      <button class="tb" @click="editor.resetAll()" :title="t('toolbar.clear.tip')">{{ t('toolbar.clear') }}</button>
       <span class="sep"></span>
       <div class="export-group">
         <label class="scale-label">@{{ exportScale }}x</label>
@@ -26,15 +26,18 @@
           <option :value="3">3x</option>
           <option :value="4">4x</option>
         </select>
-        <button class="tb primary" @click="exportPng" :disabled="busy" title="导出透明 PNG">📤 PNG</button>
-        <button class="tb accent" @click="exportSvg" :disabled="busy" title="导出矢量 SVG">📐 SVG</button>
+        <button class="tb primary" @click="exportPng" :disabled="busy" :title="t('toolbar.exportPng.tip')">📤 PNG</button>
+        <button class="tb accent" @click="exportSvg" :disabled="busy" :title="t('toolbar.exportSvg.tip')">📐 SVG</button>
       </div>
+      <span class="sep"></span>
     </div>
     <div class="status">
       <span>{{ editor.canvas.width }} × {{ editor.canvas.height }}</span>
       <span class="dot"></span>
-      <span>{{ editor.shapeCount }} 个图层</span>
-      <span v-if="busy" class="busy">处理中…</span>
+      <span>{{ editor.shapeCount }} {{ t('toolbar.layers') }}</span>
+      <span v-if="busy" class="busy">{{ t('toolbar.processing') }}</span>
+      <span class="sep"></span>
+      <button class="tb" @click="$emit('openSettings')" :title="t('toolbar.settings')">⚙</button>
     </div>
   </header>
 </template>
@@ -44,6 +47,9 @@ import { ref } from 'vue'
 import { useEditorStore } from '@/store/editor'
 import { svgToPngDataUrl } from '@/utils/svgToPng'
 import { callBackend } from '@/wails/bindings'
+import { t } from '@/i18n'
+
+defineEmits<{ openSettings: [] }>()
 
 const editor = useEditorStore()
 const exportScale = ref(2)
@@ -62,7 +68,7 @@ function duplicate() {
 async function exportPng() {
   if (busy.value) return
   if (editor.shapeCount === 0) {
-    alert('画布还是空的，先添加一些图形吧 ~')
+    alert(t('msg.canvasEmpty'))
     return
   }
   busy.value = true
@@ -71,9 +77,9 @@ async function exportPng() {
     const { dataUrl } = await svgToPngDataUrl(svg, exportScale.value)
     const base = saveName() + '.png'
     const result = await callBackend('SavePngDataUrl', dataUrl, base)
-    if (result) toast(`PNG 已导出：${result}`)
+    if (result) toast(t('msg.pngExported') + result)
   } catch (e: any) {
-    alert('导出 PNG 失败：' + (e?.message ?? String(e)))
+    alert(t('msg.pngExportFail') + (e?.message ?? String(e)))
   } finally {
     busy.value = false
   }
@@ -82,7 +88,7 @@ async function exportPng() {
 async function exportSvg() {
   if (busy.value) return
   if (editor.shapeCount === 0) {
-    alert('画布还是空的，先添加一些图形吧 ~')
+    alert(t('msg.canvasEmpty'))
     return
   }
   busy.value = true
@@ -90,9 +96,9 @@ async function exportSvg() {
     const svg = editor.exportSvgString()
     const base = saveName()
     const result = await callBackend('SaveSvg', svg, base)
-    if (result) toast(`SVG 已导出：${result}`)
+    if (result) toast(t('msg.svgExported') + result)
   } catch (e: any) {
-    alert('导出 SVG 失败：' + (e?.message ?? String(e)))
+    alert(t('msg.svgExportFail') + (e?.message ?? String(e)))
   } finally {
     busy.value = false
   }
@@ -102,9 +108,9 @@ async function saveProject() {
   try {
     const json = editor.toProjectJSON()
     const result = await callBackend('SaveProjectJson', json, saveName())
-    if (result) toast(`项目已保存：${result}`)
+    if (result) toast(t('msg.projectSaved') + result)
   } catch (e: any) {
-    alert('保存失败：' + (e?.message ?? String(e)))
+    alert(t('msg.projectSaveFail') + (e?.message ?? String(e)))
   }
 }
 
@@ -114,8 +120,8 @@ async function openProject() {
     if (!json) return
     editor.loadProjectJSON(json)
   } catch (e: any) {
-    if (String(e).includes('取消')) return
-    alert('打开失败：' + (e?.message ?? String(e)))
+    if (String(e).includes(t('msg.cancelled'))) return
+    alert(t('msg.openFail') + (e?.message ?? String(e)))
   }
 }
 
@@ -127,9 +133,9 @@ function saveName() {
 
 let toastTimer: any = null
 function toast(msg: string) {
-  const t = document.createElement('div')
-  t.textContent = msg
-  Object.assign(t.style, {
+  const el = document.createElement('div')
+  el.textContent = msg
+  Object.assign(el.style, {
     position: 'fixed',
     bottom: '20px',
     left: '50%',
@@ -144,9 +150,9 @@ function toast(msg: string) {
     boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
     backdropFilter: 'blur(6px)',
   })
-  document.body.appendChild(t)
+  document.body.appendChild(el)
   if (toastTimer) clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => t.remove(), 2800)
+  toastTimer = setTimeout(() => el.remove(), 2800)
 }
 </script>
 

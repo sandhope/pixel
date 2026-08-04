@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import type { ProjectState, Shape, CanvasSettings, ShapeType } from '@/types/shapes'
 import { createShape } from '@/utils/shapeFactory'
 import { buildExportSvg } from '@/utils/exportSvg'
+import { t } from '@/i18n'
 
 const STORAGE_KEY = 'pixel-editor-state-v1'
 
@@ -205,7 +206,7 @@ export const useEditorStore = defineStore('editor', () => {
     dirty.value = true
   }
   function resetAll() {
-    if (!confirm('确定清空画布吗？此操作可撤销。')) return
+    if (!confirm(t('msg.confirmClear'))) return
     commit()
     shapes.value = []
     selectedIds.value = []
@@ -213,7 +214,7 @@ export const useEditorStore = defineStore('editor', () => {
   function loadProjectJSON(json: string) {
     try {
       const p = JSON.parse(json) as ProjectState
-      if (!p || !Array.isArray(p.shapes)) throw new Error('格式不正确')
+      if (!p || !Array.isArray(p.shapes)) throw new Error(t('msg.invalidFormat'))
       commit()
       shapes.value = p.shapes
       canvas.value = p.canvas ?? defaultCanvas()
@@ -221,7 +222,7 @@ export const useEditorStore = defineStore('editor', () => {
       dirty.value = true
       return true
     } catch (e: any) {
-      alert('导入失败：' + (e?.message ?? String(e)))
+      alert(t('msg.importFail') + (e?.message ?? String(e)))
       return false
     }
   }

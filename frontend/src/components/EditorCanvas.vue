@@ -115,7 +115,7 @@
     </div>
 
     <div class="canvas-hint" v-if="editor.shapes.length === 0">
-      从左侧拖入图形，或点击图形库中的图标开始制作 Logo ✨
+      {{ t('canvas.empty.hint') }}
     </div>
   </div>
 </template>
@@ -125,6 +125,7 @@ import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useEditorStore } from '@/store/editor'
 import type { Shape, ShapeType } from '@/types/shapes'
 import { shapeInnerSvg as renderInner } from '@/utils/svgRender'
+import { t } from '@/i18n'
 
 const editor = useEditorStore()
 

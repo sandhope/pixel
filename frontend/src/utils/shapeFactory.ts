@@ -12,6 +12,7 @@ import type {
   TextShape,
   PathShape,
 } from '@/types/shapes'
+import { t } from '@/i18n'
 
 const palette = [
   '#FF6B6B',
@@ -114,17 +115,17 @@ export function createShape(type: ShapeType, x = 100, y = 100, overrides: Partia
 
 function defaultName(type: ShapeType): string {
   const map: Record<ShapeType, string> = {
-    rect: '矩形',
-    circle: '圆形',
-    ellipse: '椭圆',
-    line: '直线',
-    triangle: '三角形',
-    star: '星形',
-    polygon: '多边形',
-    text: '文字',
-    path: '路径',
+    rect: t('shape.rect'),
+    circle: t('shape.circle'),
+    ellipse: t('shape.ellipse'),
+    line: t('shape.line'),
+    triangle: t('shape.triangle'),
+    star: t('shape.star'),
+    polygon: t('shape.polygon'),
+    text: t('shape.text'),
+    path: t('shape.path'),
   }
-  return map[type] ?? '图形'
+  return map[type] ?? t('shape.default')
 }
 
 export function heartPath(): string {

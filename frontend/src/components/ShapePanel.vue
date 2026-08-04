@@ -1,6 +1,6 @@
 <template>
   <div class="shape-panel">
-    <div class="panel-title">图形库</div>
+    <div class="panel-title">{{ t('panel.shapes') }}</div>
     <div class="shape-grid">
       <div
         v-for="item in items"
@@ -11,36 +11,36 @@
         @dragstart="onDragStart($event, item.type)"
       >
         <div class="shape-icon" v-html="item.icon"></div>
-        <div class="shape-name">{{ item.name }}</div>
+        <div class="shape-name">{{ t(item.labelKey) }}</div>
       </div>
     </div>
 
-    <div class="panel-title" style="margin-top: 20px">画布</div>
+    <div class="panel-title" style="margin-top: 20px">{{ t('panel.canvas') }}</div>
     <div class="field-row">
-      <label>宽</label>
+      <label>{{ t('panel.width') }}</label>
       <input type="number" :value="editor.canvas.width" @change="setW" />
     </div>
     <div class="field-row">
-      <label>高</label>
+      <label>{{ t('panel.height') }}</label>
       <input type="number" :value="editor.canvas.height" @change="setH" />
     </div>
     <div class="field-row">
-      <label>背景</label>
+      <label>{{ t('panel.background') }}</label>
       <div class="bg-picker">
         <button
           class="bg-transparent"
           :class="{ active: editor.canvas.background === 'transparent' }"
           @click="setBg('transparent')"
-          title="透明背景"
+          :title="t('panel.transparent.tip')"
         >
           <span class="checker-bg"></span>
-          <span class="lbl">透明</span>
+          <span class="lbl">{{ t('panel.transparent') }}</span>
         </button>
         <input
           type="color"
           :value="editor.canvas.background === 'transparent' ? '#ffffff' : editor.canvas.background"
           @input="setBgFromColor"
-          title="自定义背景色"
+          :title="t('panel.bgColor.tip')"
         />
       </div>
     </div>
@@ -54,26 +54,28 @@
 
 <script setup lang="ts">
 import { useEditorStore } from '@/store/editor'
+import { t } from '@/i18n'
+import type { LocaleMessages } from '@/i18n/types'
 import type { ShapeType } from '@/types/shapes'
 
 const editor = useEditorStore()
 
 interface ShapeDef {
   type: ShapeType
-  name: string
+  labelKey: keyof LocaleMessages
   icon: string
 }
 
 const items: ShapeDef[] = [
-  { type: 'rect', name: '矩形', icon: rectIcon('#45B7D1') },
-  { type: 'circle', name: '圆形', icon: circleIcon('#FF6B6B') },
-  { type: 'ellipse', name: '椭圆', icon: ellipseIcon('#F4A261') },
-  { type: 'line', name: '直线', icon: lineIcon('#22D3EE') },
-  { type: 'triangle', name: '三角形', icon: triangleIcon('#A78BFA') },
-  { type: 'polygon', name: '多边形', icon: hexIcon('#F472B6') },
-  { type: 'star', name: '星形', icon: starIcon('#FFE66D') },
-  { type: 'path', name: '心形', icon: heartIcon('#EF4444') },
-  { type: 'text', name: '文字', icon: textIcon('#0f172a') },
+  { type: 'rect', labelKey: 'shape.rect', icon: rectIcon('#45B7D1') },
+  { type: 'circle', labelKey: 'shape.circle', icon: circleIcon('#FF6B6B') },
+  { type: 'ellipse', labelKey: 'shape.ellipse', icon: ellipseIcon('#F4A261') },
+  { type: 'line', labelKey: 'shape.line', icon: lineIcon('#22D3EE') },
+  { type: 'triangle', labelKey: 'shape.triangle', icon: triangleIcon('#A78BFA') },
+  { type: 'polygon', labelKey: 'shape.polygon', icon: hexIcon('#F472B6') },
+  { type: 'star', labelKey: 'shape.star', icon: starIcon('#FFE66D') },
+  { type: 'path', labelKey: 'shape.path', icon: heartIcon('#EF4444') },
+  { type: 'text', labelKey: 'shape.text', icon: textIcon('#0f172a') },
 ]
 
 function rectIcon(c: string) {
@@ -104,12 +106,12 @@ function textIcon(c: string) {
   return `<svg viewBox="0 0 48 48" width="36" height="36" font-family="Arial, sans-serif" font-weight="800" font-size="26" fill="${c}"><text x="24" y="32" text-anchor="middle">Aa</text></svg>`
 }
 
-function onClick(t: ShapeType) {
-  editor.addShapeByType(t, 120 + Math.random() * 100, 100 + Math.random() * 100)
+function onClick(t2: ShapeType) {
+  editor.addShapeByType(t2, 120 + Math.random() * 100, 100 + Math.random() * 100)
 }
-function onDragStart(e: DragEvent, t: ShapeType) {
+function onDragStart(e: DragEvent, t2: ShapeType) {
   if (!e.dataTransfer) return
-  e.dataTransfer.setData('application/x-pixel-shape', t)
+  e.dataTransfer.setData('application/x-pixel-shape', t2)
   e.dataTransfer.effectAllowed = 'copy'
 }
 

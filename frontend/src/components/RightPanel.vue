@@ -1,9 +1,8 @@
 <template>
   <div class="right-panel">
-    <!-- 图层列表 -->
     <div class="section">
       <div class="section-title">
-        <span>图层</span>
+        <span>{{ t('panel.layers') }}</span>
         <span class="count">{{ editor.shapeCount }}</span>
       </div>
       <div class="layer-list" v-if="editor.shapes.length > 0">
@@ -30,7 +29,7 @@
               class="op-btn"
               :class="{ off: !s.visible }"
               @click.stop="toggleVis(s)"
-              title="显示/隐藏"
+              :title="t('layer.visible.tip')"
             >
               {{ s.visible ? '👁' : '—' }}
             </button>
@@ -38,36 +37,34 @@
               class="op-btn"
               :class="{ on: s.locked }"
               @click.stop="toggleLock(s)"
-              title="锁定/解锁"
+              :title="t('layer.lock.tip')"
             >
               {{ s.locked ? '🔒' : '🔓' }}
             </button>
-            <button class="op-btn danger" @click.stop="remove(s)" title="删除">✕</button>
+            <button class="op-btn danger" @click.stop="remove(s)" :title="t('layer.delete.tip')">✕</button>
           </div>
         </div>
       </div>
-      <div v-else class="empty">暂无图层，从左侧添加图形吧～</div>
+      <div v-else class="empty">{{ t('layer.empty') }}</div>
     </div>
 
-    <!-- 对齐工具（≥2 选中时启用） -->
     <div class="section" v-if="editor.selectedShapes.length >= 2">
-      <div class="section-title"><span>对齐</span></div>
+      <div class="section-title"><span>{{ t('panel.align') }}</span></div>
       <div class="align-grid">
-        <button @click="editor.alignSelection('left')" title="左对齐">⇤</button>
-        <button @click="editor.alignSelection('hcenter')" title="水平居中">↔</button>
-        <button @click="editor.alignSelection('right')" title="右对齐">⇥</button>
-        <button @click="editor.alignSelection('top')" title="顶对齐">⇡</button>
-        <button @click="editor.alignSelection('vcenter')" title="垂直居中">↕</button>
-        <button @click="editor.alignSelection('bottom')" title="底对齐">⇣</button>
+        <button @click="editor.alignSelection('left')" :title="t('align.left')">⇤</button>
+        <button @click="editor.alignSelection('hcenter')" :title="t('align.hcenter')">↔</button>
+        <button @click="editor.alignSelection('right')" :title="t('align.right')">⇥</button>
+        <button @click="editor.alignSelection('top')" :title="t('align.top')">⇡</button>
+        <button @click="editor.alignSelection('vcenter')" :title="t('align.vcenter')">↕</button>
+        <button @click="editor.alignSelection('bottom')" :title="t('align.bottom')">⇣</button>
       </div>
     </div>
 
-    <!-- 属性面板 -->
     <div class="section" v-if="editor.activeShape">
-      <div class="section-title"><span>属性</span></div>
+      <div class="section-title"><span>{{ t('panel.properties') }}</span></div>
       <div class="props">
         <div class="field-row">
-          <label>名称</label>
+          <label>{{ t('prop.name') }}</label>
           <input type="text" :value="s!.name" @change="upd({ name: val($event) })" />
         </div>
         <div class="field-row two">
@@ -82,17 +79,17 @@
         </div>
         <div class="field-row two">
           <div>
-            <label>宽</label>
+            <label>{{ t('panel.width') }}</label>
             <input type="number" :value="num(s!.width)" min="1" @change="upd({ width: numVal($event) })" />
           </div>
           <div>
-            <label>高</label>
+            <label>{{ t('panel.height') }}</label>
             <input type="number" :value="num(s!.height)" min="1" @change="upd({ height: numVal($event) })" />
           </div>
         </div>
         <div class="field-row two">
           <div>
-            <label>旋转°</label>
+            <label>{{ t('prop.rotation') }}</label>
             <input
               type="number"
               :value="num(s!.rotation)"
@@ -102,7 +99,7 @@
             />
           </div>
           <div>
-            <label>透明度</label>
+            <label>{{ t('prop.opacity') }}</label>
             <input
               type="number"
               :value="Math.round((s!.opacity as number) * 100)"
@@ -113,10 +110,9 @@
           </div>
         </div>
 
-        <!-- 类型特有：rect 圆角 -->
         <template v-if="s!.type === 'rect'">
           <div class="field-row">
-            <label>圆角</label>
+            <label>{{ t('prop.cornerRadius') }}</label>
             <input
               type="number"
               :value="(s as any).radius"
@@ -128,7 +124,7 @@
         <template v-if="s!.type === 'star'">
           <div class="field-row two">
             <div>
-              <label>角数</label>
+              <label>{{ t('prop.points') }}</label>
               <input
                 type="number"
                 min="3"
@@ -138,7 +134,7 @@
               />
             </div>
             <div>
-              <label>内径比</label>
+              <label>{{ t('prop.innerRatio') }}</label>
               <input
                 type="number"
                 min="0.1"
@@ -152,7 +148,7 @@
         </template>
         <template v-if="s!.type === 'polygon'">
           <div class="field-row">
-            <label>边数</label>
+            <label>{{ t('prop.sides') }}</label>
             <input
               type="number"
               min="3"
@@ -164,12 +160,12 @@
         </template>
         <template v-if="s!.type === 'text'">
           <div class="field-row">
-            <label>文字</label>
+            <label>{{ t('prop.text') }}</label>
             <input type="text" :value="(s as any).text" @change="updAny({ text: val($event) })" />
           </div>
           <div class="field-row two">
             <div>
-              <label>字号</label>
+              <label>{{ t('prop.fontSize') }}</label>
               <input
                 type="number"
                 min="8"
@@ -178,31 +174,31 @@
               />
             </div>
             <div>
-              <label>字重</label>
+              <label>{{ t('prop.fontWeight') }}</label>
               <select :value="String((s as any).fontWeight)" @change="updAny({ fontWeight: parseWeight(val($event)) })">
-                <option value="300">轻 300</option>
-                <option value="400">常规 400</option>
-                <option value="600">半粗 600</option>
-                <option value="700">粗 700</option>
-                <option value="900">超粗 900</option>
+                <option value="300">{{ t('font.weight300') }}</option>
+                <option value="400">{{ t('font.weight400') }}</option>
+                <option value="600">{{ t('font.weight600') }}</option>
+                <option value="700">{{ t('font.weight700') }}</option>
+                <option value="900">{{ t('font.weight900') }}</option>
               </select>
             </div>
           </div>
           <div class="field-row">
-            <label>字体</label>
+            <label>{{ t('prop.fontFamily') }}</label>
             <select :value="(s as any).fontFamily" @change="updAny({ fontFamily: val($event) })">
-              <option value='Inter, "PingFang SC", "Microsoft YaHei", sans-serif'>默认无衬线</option>
-              <option value='"PingFang SC", "Microsoft YaHei", sans-serif'>苹方 / 雅黑</option>
-              <option value='"Songti SC", SimSun, serif'>宋体</option>
-              <option value='"Kaiti SC", "KaiTi", serif'>楷体</option>
-              <option value='"STHeiti", "Heiti SC", sans-serif'>黑体</option>
+              <option value='Inter, "PingFang SC", "Microsoft YaHei", sans-serif'>{{ t('font.default') }}</option>
+              <option value='"PingFang SC", "Microsoft YaHei", sans-serif'>{{ t('font.pingfang') }}</option>
+              <option value='"Songti SC", SimSun, serif'>{{ t('font.songti') }}</option>
+              <option value='"Kaiti SC", "KaiTi", serif'>{{ t('font.kaiti') }}</option>
+              <option value='"STHeiti", "Heiti SC", sans-serif'>{{ t('font.heiti') }}</option>
               <option value="Georgia, serif">Georgia</option>
-              <option value='"Courier New", monospace'>等宽 Courier</option>
-              <option value='"Hiragino Sans GB", sans-serif'>冬青黑</option>
+              <option value='"Courier New", monospace'>Courier</option>
+              <option value='"Hiragino Sans GB", sans-serif'>Hiragino</option>
             </select>
           </div>
           <div class="field-row">
-            <label>对齐</label>
+            <label>{{ t('prop.align') }}</label>
             <div class="seg">
               <button
                 v-for="a in aligns"
@@ -216,15 +212,13 @@
           </div>
         </template>
 
-        <!-- 通用：填充 / 描边 -->
         <div class="field-row">
-          <label>填充</label>
+          <label>{{ t('prop.fill') }}</label>
           <div class="color-pick">
             <button
               class="none-btn"
               :class="{ on: s!.fill === 'none' }"
               @click="upd({ fill: 'none' })"
-              title="不填充"
             >∅</button>
             <input
               type="color"
@@ -235,13 +229,12 @@
         </div>
         <div class="field-row two">
           <div>
-            <label>描边</label>
+            <label>{{ t('prop.stroke') }}</label>
             <div class="color-pick">
               <button
                 class="none-btn"
                 :class="{ on: s!.stroke === 'none' }"
                 @click="upd({ stroke: 'none', strokeWidth: s!.stroke === 'none' ? (s!.strokeWidth || 2) : s!.strokeWidth })"
-                title="无描边"
               >∅</button>
               <input
                 type="color"
@@ -251,7 +244,7 @@
             </div>
           </div>
           <div>
-            <label>描边宽</label>
+            <label>{{ t('prop.strokeWidth') }}</label>
             <input
               type="number"
               min="0"
@@ -262,18 +255,17 @@
           </div>
         </div>
 
-        <!-- 图层顺序 -->
-        <div class="section-title sub"><span>图层顺序</span></div>
+        <div class="section-title sub"><span>{{ t('prop.layerOrder') }}</span></div>
         <div class="seg order-seg">
-          <button @click="move('bottom')">到底层</button>
-          <button @click="move('down')">下移</button>
-          <button @click="move('up')">上移</button>
-          <button @click="move('top')">到顶层</button>
+          <button @click="move('bottom')">{{ t('layer.toBottom') }}</button>
+          <button @click="move('down')">{{ t('layer.down') }}</button>
+          <button @click="move('up')">{{ t('layer.up') }}</button>
+          <button @click="move('top')">{{ t('layer.toTop') }}</button>
         </div>
       </div>
     </div>
     <div v-else class="section empty-prop">
-      选中一个图形以编辑属性
+      {{ t('prop.selectEmpty') }}
     </div>
   </div>
 </template>
@@ -281,13 +273,28 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useEditorStore } from '@/store/editor'
+import { t, locale } from '@/i18n'
 import type { Shape } from '@/types/shapes'
 
 const editor = useEditorStore()
 const s = computed(() => editor.activeShape)
 
-// 图层顺序：数组末尾 = 顶层
 const reversedShapes = computed(() => [...editor.shapes].reverse())
+
+const aligns = computed(() => {
+  if (locale.value === 'en') {
+    return [
+      { v: 'left', l: 'L' },
+      { v: 'center', l: 'C' },
+      { v: 'right', l: 'R' },
+    ]
+  }
+  return [
+    { v: 'left', l: '左' },
+    { v: 'center', l: '中' },
+    { v: 'right', l: '右' },
+  ]
+})
 
 function toggleVis(sh: Shape) {
   editor.commit()
@@ -305,7 +312,6 @@ function onClickLayer(sh: Shape, e: MouseEvent) {
   const add = e.shiftKey || e.metaKey || e.ctrlKey
   editor.selectOne(sh.id, add)
 }
-// 拖拽排序
 let dragId: string | null = null
 function onDragStart(e: DragEvent, id: string) {
   dragId = id
@@ -316,7 +322,6 @@ function onDragStart(e: DragEvent, id: string) {
 }
 function onDrop(e: DragEvent, targetId: string) {
   if (!dragId || dragId === targetId) return
-  // 判定前后：target 在 reversedShapes 中的索引 vs dragId 的索引
   const list = [...editor.shapes].reverse()
   const di = list.findIndex((x) => x.id === dragId)
   const ti = list.findIndex((x) => x.id === targetId)
@@ -355,11 +360,6 @@ function parseWeight(v: string): number | 'normal' | 'bold' {
   if (Number.isFinite(n)) return n
   return v as any
 }
-const aligns = [
-  { v: 'left', l: '左' },
-  { v: 'center', l: '中' },
-  { v: 'right', l: '右' },
-]
 function move(dir: 'up' | 'down' | 'top' | 'bottom') {
   if (editor.activeShape) editor.moveLayer(editor.activeShape.id, dir)
 }

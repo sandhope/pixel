@@ -1,6 +1,6 @@
 <template>
   <div class="app-root">
-    <Toolbar />
+    <Toolbar @open-settings="showSettings = true" />
     <div class="body">
       <aside class="left-pane">
         <ShapePanel />
@@ -12,14 +12,19 @@
         <RightPanel />
       </aside>
     </div>
+    <SettingsDialog :visible="showSettings" @close="showSettings = false" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import Toolbar from '@/components/Toolbar.vue'
 import ShapePanel from '@/components/ShapePanel.vue'
 import EditorCanvas from '@/components/EditorCanvas.vue'
 import RightPanel from '@/components/RightPanel.vue'
+import SettingsDialog from '@/components/SettingsDialog.vue'
+
+const showSettings = ref(false)
 </script>
 
 <style scoped>
