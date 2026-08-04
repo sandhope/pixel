@@ -21,15 +21,13 @@
         </div>
         <div class="setting-row">
           <label>{{ t('settings.theme') }}</label>
-          <div class="theme-dots">
-            <div
+          <div class="seg-switch">
+            <button
               v-for="th in themes"
               :key="th.id"
-              class="theme-dot"
-              :class="[th.cls, { active: current === th.id }]"
-              :title="t(th.labelKey)"
+              :class="{ on: current === th.id }"
               @click="apply(th.id)"
-            ></div>
+            >{{ t(th.labelKey) }}</button>
           </div>
         </div>
       </div>
@@ -136,31 +134,5 @@ function changeLang(l: Locale) {
   background: var(--primary);
   color: #fff;
 }
-.theme-dots {
-  display: flex;
-  gap: 8px;
-  padding: 4px;
-  background: var(--surface-2);
-  border-radius: 18px;
-}
-.theme-dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: border-color 0.2s, transform 0.15s;
-  border: 2px solid transparent;
-}
-.theme-dot:hover {
-  transform: scale(1.15);
-}
-.theme-dot.active {
-  border-color: var(--fg);
-}
-.theme-dot.dark {
-  background: linear-gradient(135deg, #6366f1, #0b1220);
-}
-.theme-dot.light {
-  background: linear-gradient(135deg, #f1f5f9, #6366f1);
-}
+
 </style>
