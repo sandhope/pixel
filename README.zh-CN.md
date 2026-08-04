@@ -127,3 +127,21 @@ wails build
 ## 📄 许可证
 
 MIT — 随意使用、二次开发、发布你的 Logo。
+
+## 支持项目
+
+如果这个项目对你有帮助，欢迎请我喝杯咖啡 ☕
+
+<table>
+  <tr>
+    <td>
+      <img src="frontend/public/donate-wechat.jpg" width="200"/>
+    </td>
+    <td width="100" align="center" > 🙏 </td>
+    <td>
+      <img src="frontend/public/donate-alipay.jpg" width="200"/>
+    </td>
+  </tr>
+</table>
+
+也可以通过 [OpenCollective](https://opencollective.com/sandhope) 支持项目。
