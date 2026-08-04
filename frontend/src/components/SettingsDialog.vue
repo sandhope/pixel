@@ -33,9 +33,6 @@
           </div>
         </div>
       </div>
-      <div class="settings-footer">
-        <button class="done-btn" @click="close">{{ t('settings.close') }}</button>
-      </div>
     </div>
   </div>
 </template>
@@ -165,25 +162,5 @@ function changeLang(l: Locale) {
 }
 .theme-dot.light {
   background: linear-gradient(135deg, #f1f5f9, #6366f1);
-}
-.settings-footer {
-  padding: 14px 20px 18px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  border-top: 1px solid var(--border);
-}
-.done-btn {
-  background: var(--primary);
-  border: none;
-  color: #fff;
-  padding: 7px 20px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.done-btn:hover {
-  filter: brightness(1.1);
 }
 </style>
