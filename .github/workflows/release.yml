@@ -1,0 +1,127 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (windows/${{ matrix.arch }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Build application
+        run: wails build -platform windows/${{ matrix.arch }} -clean -o pixel.exe
+
+      - name: Package artifacts
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          $arch = "${{ matrix.arch }}"
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+
+          $exeName = "pixel-$version-windows-$arch.exe"
+          $zipName = "pixel-$version-windows-$arch.zip"
+          Copy-Item build/bin/pixel.exe "dist/$exeName"
+          Compress-Archive -Path build/bin/pixel.exe -DestinationPath "dist/$zipName"
+
+          # Generate SHA-256 checksums so users can verify their downloads.
+          foreach ($file in @($exeName, $zipName)) {
+            $path = "dist/$file"
+            $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLower()
+            "$hash *$file" | Out-File -FilePath "$path.sha256" -Encoding ascii
+          }
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          merge-multiple: true
+          path: dist
+
+      - name: Compose release body (download guide + auto notes)
+        shell: pwsh
+        run: |
+          # 1) Let GitHub auto-generate the "What's Changed" section from commits/PRs.
+          $notes = gh api repos/${{ github.repository }}/releases/generate-notes `
+            -f tag_name="${{ github.ref_name }}" `
+            -f target_commitish="${{ github.sha }}" `
+            --jq '.body'
+          if (-not $notes) { $notes = "" }
+
+          # 2) Write the bilingual (EN + ZH) file download guide.
+          $guide = @'
+          ## 📦 Which file should I download? / 该下载哪个文件？
+
+          | File | What it is | 中文说明 | Who should use it |
+          |------|-----------|---------|-------------------|
+          | `pixel-<ver>-windows-amd64.exe` | **Standalone executable** for Intel/AMD (x64) PCs — double-click to run, no installation. | **x64 绿色单文件** — 双击即可运行，无需安装。 | Most users. |
+          | `pixel-<ver>-windows-amd64.zip` | The x64 executable **compressed** into a zip (smaller download). Unzip, then run the exe. | x64 可执行文件的 **压缩包**（体积更小），解压后运行。 | x64 users on slow connections. |
+          | `pixel-<ver>-windows-arm64.exe` | Standalone executable for **ARM64** Windows PCs (e.g. Snapdragon X). | **ARM64 绿色单文件** — 适用于 ARM 架构设备。 | ARM64 device users. |
+          | `pixel-<ver>-windows-arm64.zip` | The ARM64 executable compressed into a zip. | ARM64 可执行文件的压缩包。 | ARM64 users on slow connections. |
+          | `*.sha256` | SHA-256 checksum files — verify your download is complete and untampered. | **SHA-256 校验文件** — 用于核对下载文件是否完整未被篡改。 | Anyone who wants to verify integrity. |
+
+          > **Architecture:** pick **amd64 (x64)** unless you specifically have an ARM64 Windows device.
+          > **架构：** 除非你使用的是 ARM64 设备（如骁龙本），否则请选择 **amd64 (x64)**。
+          > **Note:** all builds require the WebView2 runtime (pre-installed on most Win10/11 systems).
+          > **说明：** 所有构建均需要 WebView2 运行时（大多数 Win10/11 已内置）。
+
+          ## What's Changed
+
+          '@
+
+          Set-Content -Path release_body.md -Value ($guide + $notes) -Encoding utf8
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Pixel Logo Studio ${{ github.ref_name }}
+          body_path: release_body.md
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            dist/*.exe
+            dist/*.zip
+            dist/*.sha256
