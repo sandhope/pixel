@@ -94,6 +94,7 @@ const zhCN: LocaleMessages = {
   // settings dialog
   'settings.title': '设置',
   'settings.language': '语言',
+  'settings.about': '关于',
   'settings.close': '关闭',
   // messages
   'msg.canvasEmpty': '画布还是空的，先添加一些图形吧 ~',
@@ -117,6 +118,18 @@ const zhCN: LocaleMessages = {
   'dialog.exportSvg': '导出 SVG',
   'dialog.saveProject': '保存项目',
   'dialog.openProject': '打开项目',
+  // about dialog
+  'about.title': '关于',
+  'about.tagline': '搭积木式 Logo 编辑器',
+  'about.version': '版本',
+  'about.projectHome': '项目主页',
+  'about.projectHomeDesc': '在 GitHub 上查看源码与文档',
+  'about.donateTitle': '支持作者',
+  'about.donateDesc': '如果这个项目对你有帮助，欢迎请作者喝杯咖啡',
+  'about.donateBtn': '捐赠支持',
+  'about.alipay': '支付宝',
+  'about.wechat': '微信',
+  'about.qrMissing': '请将 {file} 放入 frontend/public/',
 }
 
 export default zhCN

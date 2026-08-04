@@ -31,8 +31,13 @@ function setLocale(l: Locale) {
   } catch {}
 }
 
-function t(key: keyof LocaleMessages): string {
-  return messages[locale.value][key] ?? messages['zh-CN'][key] ?? key
+function t(key: keyof LocaleMessages, params?: Record<string, string | number>): string {
+  let s = messages[locale.value][key] ?? messages['zh-CN'][key] ?? key
+  if (params) {
+    s = s.replace(/\{(\w+)\}/g, (_, name) =>
+      params[name] != null ? String(params[name]) : `{${name}}`)
+  }
+  return s
 }
 
 // 全局响应式 t，方便在模板内直接用 t('key')

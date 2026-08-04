@@ -12,7 +12,8 @@
         <RightPanel />
       </aside>
     </div>
-    <SettingsDialog :visible="showSettings" @close="showSettings = false" />
+    <SettingsDialog :visible="showSettings" @close="showSettings = false" @open-about="showSettings = false; showAbout = true" />
+    <AboutDialog v-if="showAbout" @close="showAbout = false" />
   </div>
 </template>
 
@@ -23,8 +24,10 @@ import ShapePanel from '@/components/ShapePanel.vue'
 import EditorCanvas from '@/components/EditorCanvas.vue'
 import RightPanel from '@/components/RightPanel.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
+import AboutDialog from '@/components/AboutDialog.vue'
 
 const showSettings = ref(false)
+const showAbout = ref(false)
 </script>
 
 <style scoped>

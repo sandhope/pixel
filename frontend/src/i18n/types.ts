@@ -94,6 +94,7 @@ export interface LocaleMessages {
   // settings dialog
   'settings.title': string
   'settings.language': string
+  'settings.about': string
   'settings.close': string
   // messages
   'msg.canvasEmpty': string
@@ -117,4 +118,16 @@ export interface LocaleMessages {
   'dialog.exportSvg': string
   'dialog.saveProject': string
   'dialog.openProject': string
+  // about dialog
+  'about.title': string
+  'about.tagline': string
+  'about.version': string
+  'about.projectHome': string
+  'about.projectHomeDesc': string
+  'about.donateTitle': string
+  'about.donateDesc': string
+  'about.donateBtn': string
+  'about.alipay': string
+  'about.wechat': string
+  'about.qrMissing': string
 }

@@ -94,6 +94,7 @@ const en: LocaleMessages = {
   // settings dialog
   'settings.title': 'Settings',
   'settings.language': 'Language',
+  'settings.about': 'About',
   'settings.close': 'Close',
   // messages
   'msg.canvasEmpty': 'Canvas is empty — add some shapes first ~',
@@ -117,6 +118,18 @@ const en: LocaleMessages = {
   'dialog.exportSvg': 'Export SVG',
   'dialog.saveProject': 'Save Project',
   'dialog.openProject': 'Open Project',
+  // about dialog
+  'about.title': 'About',
+  'about.tagline': 'Block-stacking Logo editor',
+  'about.version': 'Version',
+  'about.projectHome': 'Project home',
+  'about.projectHomeDesc': 'View the source and docs on GitHub',
+  'about.donateTitle': 'Support the author',
+  'about.donateDesc': 'If this project helps you, consider buying the author a coffee',
+  'about.donateBtn': 'Donate',
+  'about.alipay': 'Alipay',
+  'about.wechat': 'WeChat',
+  'about.qrMissing': 'Drop {file} into frontend/public/',
 }
 
 export default en

@@ -21,6 +21,7 @@
         </div>
       </div>
       <div class="settings-footer">
+        <button class="about-btn" @click="$emit('openAbout')">{{ t('settings.about') }}</button>
         <button class="done-btn" @click="close">{{ t('settings.close') }}</button>
       </div>
     </div>
@@ -32,7 +33,7 @@ import { t, locale, setLocale } from '@/i18n'
 import type { Locale } from '@/i18n'
 
 defineProps<{ visible: boolean }>()
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: [], openAbout: [] }>()
 
 function close() {
   emit('close')
@@ -123,8 +124,22 @@ function changeLang(l: Locale) {
 .settings-footer {
   padding: 14px 20px 18px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   border-top: 1px solid #1e293b;
+}
+.about-btn {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.about-btn:hover {
+  border-color: #6366f1;
+  color: #e2e8f0;
 }
 .done-btn {
   background: #6366f1;
