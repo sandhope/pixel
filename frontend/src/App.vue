@@ -37,8 +37,8 @@ const showAbout = ref(false)
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #0b1220;
-  color: #e2e8f0;
+  background: var(--bg);
+  color: var(--fg);
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   font-feature-settings: 'cv11', 'ss01';
@@ -52,8 +52,8 @@ const showAbout = ref(false)
 .left-pane {
   width: 280px;
   min-width: 260px;
-  background: #0f172a;
-  border-right: 1px solid #1e293b;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   overflow: hidden;
   display: flex;
   flex-direction: column;

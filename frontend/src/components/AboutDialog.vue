@@ -120,7 +120,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .about-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay);
   backdrop-filter: blur(4px);
   z-index: 9100;
   display: flex;
@@ -129,10 +129,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .about-card {
   width: 400px;
-  background: #0f172a;
-  border: 1px solid #1e293b;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 .about-header {
@@ -140,25 +140,25 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px 14px;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid var(--border);
 }
 .about-title {
   font-size: 15px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--fg);
 }
 .close-btn {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--text-dim);
   font-size: 16px;
   cursor: pointer;
   padding: 2px 6px;
   border-radius: 6px;
 }
 .close-btn:hover {
-  background: #1e293b;
-  color: #e2e8f0;
+  background: var(--surface-2);
+  color: var(--fg);
 }
 .about-body {
   padding: 20px;
@@ -181,16 +181,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .brand-name {
   font-size: 16px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--fg);
 }
 .brand-tagline {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 .brand-version {
   font-size: 11px;
-  color: #64748b;
+  color: var(--text-dim);
   margin-top: 2px;
 }
 
@@ -199,19 +199,19 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s;
   margin-bottom: 16px;
 }
 .link-row:hover {
-  border-color: #6366f1;
-  background: #1e2540;
+  border-color: var(--primary);
+  background: var(--primary-glow);
 }
 .link-icon {
-  color: #94a3b8;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 .link-info {
@@ -219,32 +219,32 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .link-name {
   font-size: 13px;
-  color: #e2e8f0;
+  color: var(--fg);
   font-weight: 600;
 }
 .link-desc {
   font-size: 11px;
-  color: #64748b;
+  color: var(--text-dim);
   margin-top: 1px;
 }
 .link-arrow {
-  color: #475569;
+  color: var(--text-dim);
   flex-shrink: 0;
 }
 
 .donate {
-  border-top: 1px solid #1e293b;
+  border-top: 1px solid var(--border);
   padding-top: 16px;
 }
 .donate-title {
   font-size: 13px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--fg);
   margin-bottom: 4px;
 }
 .donate-desc {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-bottom: 14px;
 }
 .qr-grid {
@@ -264,7 +264,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
 }
 .qr-frame img {
   width: 100%;
@@ -273,7 +273,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .qr-missing {
   font-size: 10px;
-  color: #64748b;
+  color: var(--text-dim);
   text-align: center;
   padding: 8px;
   line-height: 1.4;

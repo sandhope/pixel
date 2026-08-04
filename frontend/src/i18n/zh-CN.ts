@@ -94,6 +94,7 @@ const zhCN: LocaleMessages = {
   // settings dialog
   'settings.title': '设置',
   'settings.language': '语言',
+  'settings.theme': '主题',
   'settings.about': '关于',
   'settings.close': '关闭',
   // messages
@@ -130,6 +131,9 @@ const zhCN: LocaleMessages = {
   'about.alipay': '支付宝',
   'about.wechat': '微信',
   'about.qrMissing': '请将 {file} 放入 frontend/public/',
+  // themes
+  'theme.dark': '深色',
+  'theme.light': '浅色',
 }
 
 export default zhCN

@@ -440,9 +440,9 @@ watch(
   flex: 1;
   overflow: auto;
   background:
-    radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.06), transparent 60%),
-    radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.05), transparent 60%),
-    #0b1220;
+    radial-gradient(circle at 20% 20%, var(--primary-glow), transparent 60%),
+    radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 60%),
+    var(--bg);
   padding: 40px;
   display: flex;
   align-items: center;
@@ -451,9 +451,7 @@ watch(
 }
 .canvas-wrapper {
   position: relative;
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow), 0 0 0 1px var(--border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -462,13 +460,13 @@ watch(
   left: 0;
   top: 0;
   background-image:
-    linear-gradient(45deg, #334155 25%, transparent 25%),
-    linear-gradient(-45deg, #334155 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #334155 75%),
-    linear-gradient(-45deg, transparent 75%, #334155 75%);
+    linear-gradient(45deg, var(--border) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--border) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--border) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--border) 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0;
-  background-color: #1e293b;
+  background-color: var(--surface-2);
 }
 .solid-bg {
   position: absolute;
@@ -511,12 +509,12 @@ watch(
   left: 50%;
   bottom: 30px;
   transform: translateX(-50%);
-  color: #64748b;
+  color: var(--text-dim);
   font-size: 13px;
-  background: rgba(15, 23, 42, 0.6);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
   backdrop-filter: blur(4px);
   pointer-events: none;
 }

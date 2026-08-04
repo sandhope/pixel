@@ -8,7 +8,7 @@
       <div class="settings-body">
         <div class="setting-row">
           <label>{{ t('settings.language') }}</label>
-          <div class="lang-switch">
+          <div class="seg-switch">
             <button
               :class="{ on: locale === 'zh-CN' }"
               @click="changeLang('zh-CN')"
@@ -17,6 +17,19 @@
               :class="{ on: locale === 'en' }"
               @click="changeLang('en')"
             >English</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label>{{ t('settings.theme') }}</label>
+          <div class="theme-dots">
+            <div
+              v-for="th in themes"
+              :key="th.id"
+              class="theme-dot"
+              :class="[th.cls, { active: current === th.id }]"
+              :title="t(th.labelKey)"
+              @click="apply(th.id)"
+            ></div>
           </div>
         </div>
       </div>
@@ -31,9 +44,12 @@
 <script setup lang="ts">
 import { t, locale, setLocale } from '@/i18n'
 import type { Locale } from '@/i18n'
+import { useTheme } from '@/composables/useTheme'
 
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ close: [], openAbout: [] }>()
+
+const { current, themes, apply } = useTheme()
 
 function close() {
   emit('close')
@@ -47,7 +63,7 @@ function changeLang(l: Locale) {
 .settings-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay);
   backdrop-filter: blur(4px);
   z-index: 9000;
   display: flex;
@@ -56,10 +72,10 @@ function changeLang(l: Locale) {
 }
 .settings-dialog {
   width: 380px;
-  background: #0f172a;
-  border: 1px solid #1e293b;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 .settings-header {
@@ -67,28 +83,31 @@ function changeLang(l: Locale) {
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px 14px;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid var(--border);
 }
 .settings-title {
   font-size: 15px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--fg);
 }
 .close-btn {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--text-dim);
   font-size: 16px;
   cursor: pointer;
   padding: 2px 6px;
   border-radius: 6px;
 }
 .close-btn:hover {
-  background: #1e293b;
-  color: #e2e8f0;
+  background: var(--surface-2);
+  color: var(--fg);
 }
 .settings-body {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 .setting-row {
   display: flex;
@@ -97,52 +116,79 @@ function changeLang(l: Locale) {
 }
 .setting-row label {
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
-.lang-switch {
+.seg-switch {
   display: inline-flex;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
 }
-.lang-switch button {
-  background: #1e293b;
-  color: #94a3b8;
+.seg-switch button {
+  background: var(--surface-2);
+  color: var(--text-muted);
   border: none;
   padding: 7px 14px;
   font-size: 12px;
   cursor: pointer;
-  border-right: 1px solid #334155;
+  border-right: 1px solid var(--border);
 }
-.lang-switch button:last-child {
+.seg-switch button:last-child {
   border-right: none;
 }
-.lang-switch button.on {
-  background: #6366f1;
+.seg-switch button.on {
+  background: var(--primary);
   color: #fff;
+}
+.theme-dots {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  background: var(--surface-2);
+  border-radius: 18px;
+}
+.theme-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  border: 2px solid transparent;
+}
+.theme-dot:hover {
+  transform: scale(1.15);
+}
+.theme-dot.active {
+  border-color: var(--fg);
+}
+.theme-dot.dark {
+  background: linear-gradient(135deg, #6366f1, #0b1220);
+}
+.theme-dot.light {
+  background: linear-gradient(135deg, #f1f5f9, #6366f1);
 }
 .settings-footer {
   padding: 14px 20px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #1e293b;
+  border-top: 1px solid var(--border);
 }
 .about-btn {
   background: transparent;
-  border: 1px solid #334155;
-  color: #94a3b8;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   padding: 7px 16px;
   border-radius: 8px;
   font-size: 12px;
   cursor: pointer;
 }
 .about-btn:hover {
-  border-color: #6366f1;
-  color: #e2e8f0;
+  border-color: var(--primary);
+  color: var(--fg);
 }
 .done-btn {
-  background: #6366f1;
+  background: var(--primary);
   border: none;
   color: #fff;
   padding: 7px 20px;

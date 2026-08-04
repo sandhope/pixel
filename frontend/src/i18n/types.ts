@@ -94,6 +94,7 @@ export interface LocaleMessages {
   // settings dialog
   'settings.title': string
   'settings.language': string
+  'settings.theme': string
   'settings.about': string
   'settings.close': string
   // messages
@@ -130,4 +131,7 @@ export interface LocaleMessages {
   'about.alipay': string
   'about.wechat': string
   'about.qrMissing': string
+  // themes
+  'theme.dark': string
+  'theme.light': string
 }

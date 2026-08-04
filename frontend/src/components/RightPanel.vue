@@ -374,11 +374,11 @@ function thumbBg(shape: Shape): string {
 .right-panel {
   width: 280px;
   min-width: 280px;
-  border-left: 1px solid #1e293b;
-  background: #0f172a;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
   overflow-y: auto;
   padding: 14px 14px 20px;
-  color: #e2e8f0;
+  color: var(--fg);
 }
 .section {
   margin-bottom: 20px;
@@ -386,7 +386,7 @@ function thumbBg(shape: Shape): string {
 .section-title {
   font-size: 12px;
   letter-spacing: 1px;
-  color: #94a3b8;
+  color: var(--text-muted);
   text-transform: uppercase;
   margin-bottom: 10px;
   font-weight: 600;
@@ -395,31 +395,31 @@ function thumbBg(shape: Shape): string {
   justify-content: space-between;
 }
 .section-title .count {
-  background: #1e293b;
+  background: var(--surface-2);
   border-radius: 999px;
   padding: 1px 8px;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
   letter-spacing: 0;
 }
 .section-title.sub {
   margin-top: 18px;
 }
 .empty {
-  color: #64748b;
+  color: var(--text-dim);
   font-size: 12px;
   text-align: center;
   padding: 14px 4px;
-  background: #1e293b;
+  background: var(--surface-2);
   border-radius: 8px;
-  border: 1px dashed #334155;
+  border: 1px dashed var(--border);
 }
 .empty-prop {
-  color: #64748b;
+  color: var(--text-dim);
   font-size: 13px;
   text-align: center;
   padding: 30px 10px;
-  border: 1px dashed #334155;
+  border: 1px dashed var(--border);
   border-radius: 8px;
   margin-top: 30px;
 }
@@ -434,28 +434,28 @@ function thumbBg(shape: Shape): string {
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  background: #1e293b;
+  background: var(--surface-2);
   border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   user-select: none;
 }
 .layer-row:hover {
-  border-color: #334155;
+  border-color: var(--border);
 }
 .layer-row.active {
-  border-color: #6366f1;
-  background: #1e2540;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.18);
+  border-color: var(--primary);
+  background: var(--primary-glow);
+  box-shadow: 0 0 0 2px var(--primary-glow);
 }
 .layer-row.hidden {
   opacity: 0.5;
 }
 .layer-row.locked .name {
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 .grip {
-  color: #475569;
+  color: var(--text-dim);
   font-size: 10px;
   letter-spacing: -1px;
   cursor: grab;
@@ -464,13 +464,13 @@ function thumbBg(shape: Shape): string {
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
   flex-shrink: 0;
 }
 .name {
   flex: 1;
   font-size: 12px;
-  color: #cbd5e1;
+  color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -481,7 +481,7 @@ function thumbBg(shape: Shape): string {
 }
 .op-btn {
   background: transparent;
-  color: #94a3b8;
+  color: var(--text-muted);
   border: none;
   padding: 2px 5px;
   border-radius: 4px;
@@ -489,8 +489,8 @@ function thumbBg(shape: Shape): string {
   cursor: pointer;
 }
 .op-btn:hover {
-  background: #334155;
-  color: #e2e8f0;
+  background: var(--border);
+  color: var(--fg);
 }
 .op-btn.off {
   color: #f87171;
@@ -509,18 +509,18 @@ function thumbBg(shape: Shape): string {
   gap: 4px;
 }
 .align-grid button {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #cbd5e1;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   border-radius: 6px;
   padding: 6px 0;
   font-size: 14px;
   cursor: pointer;
 }
 .align-grid button:hover {
-  border-color: #6366f1;
-  background: #1e2540;
-  color: #fff;
+  border-color: var(--primary);
+  background: var(--primary-glow);
+  color: var(--fg);
 }
 
 .field-row {
@@ -540,16 +540,16 @@ function thumbBg(shape: Shape): string {
 }
 .field-row label {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-muted);
   min-width: 44px;
 }
 .field-row input[type='text'],
 .field-row input[type='number'],
 .field-row select {
   flex: 1;
-  background: #0b1220;
-  border: 1px solid #334155;
-  color: #e2e8f0;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
   padding: 5px 8px;
   border-radius: 6px;
   font-size: 12px;
@@ -558,7 +558,7 @@ function thumbBg(shape: Shape): string {
 .field-row input:focus,
 .field-row select:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--primary);
 }
 .color-pick {
   flex: 1;
@@ -569,9 +569,9 @@ function thumbBg(shape: Shape): string {
 .none-btn {
   width: 30px;
   height: 28px;
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #94a3b8;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
@@ -579,12 +579,12 @@ function thumbBg(shape: Shape): string {
 .none-btn.on {
   border-color: #f87171;
   color: #f87171;
-  background: #2a1a1a;
+  background: color-mix(in srgb, #f87171 15%, var(--surface-2));
 }
 .color-pick input[type='color'] {
   width: 32px;
   height: 28px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0;
   background: transparent;
@@ -593,25 +593,25 @@ function thumbBg(shape: Shape): string {
 .seg {
   flex: 1;
   display: inline-flex;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
 }
 .seg button {
   flex: 1;
-  background: #1e293b;
-  color: #94a3b8;
+  background: var(--surface-2);
+  color: var(--text-muted);
   border: none;
   padding: 5px 0;
   font-size: 12px;
   cursor: pointer;
-  border-right: 1px solid #334155;
+  border-right: 1px solid var(--border);
 }
 .seg button:last-child {
   border-right: none;
 }
 .seg button.on {
-  background: #6366f1;
+  background: var(--primary);
   color: #fff;
 }
 .order-seg button {

@@ -1,6 +1,64 @@
+/* ===== Theme system: seed primitives + derived tokens ===== */
+/* Default (dark) theme seeds */
 :root {
+  --seed-bg: #0b1220;
+  --seed-fg: #e2e8f0;
+  --seed-primary: #6366f1;
+  --seed-accent: #ec4899;
+  --seed-surface: #0f172a;
+  --seed-surface-2: #1e293b;
+  --seed-border: #334155;
+  --seed-text-muted: #94a3b8;
+  --seed-text-dim: #64748b;
+  --seed-scrollbar: #1e293b;
+  --seed-scrollbar-hover: #334155;
+  --seed-input-bg: #0b1220;
+
+  /* Derived tokens */
+  --bg: var(--seed-bg);
+  --fg: var(--seed-fg);
+  --primary: var(--seed-primary);
+  --accent: var(--seed-accent);
+  --surface: var(--seed-surface);
+  --surface-2: var(--seed-surface-2);
+  --border: var(--seed-border);
+  --text-muted: var(--seed-text-muted);
+  --text-dim: var(--seed-text-dim);
+  --scrollbar: var(--seed-scrollbar);
+  --scrollbar-hover: var(--seed-scrollbar-hover);
+  --input-bg: var(--seed-input-bg);
+  --overlay: rgba(0, 0, 0, 0.5);
+  --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  --primary-glow: color-mix(in srgb, var(--seed-primary) 25%, transparent);
+  --selection-bg: color-mix(in srgb, var(--seed-primary) 35%, transparent);
+
   color-scheme: dark;
 }
+
+/* Light theme */
+[data-theme="light"] {
+  --seed-bg: #f1f5f9;
+  --seed-fg: #1e293b;
+  --seed-primary: #6366f1;
+  --seed-accent: #ec4899;
+  --seed-surface: #ffffff;
+  --seed-surface-2: #e2e8f0;
+  --seed-border: #cbd5e1;
+  --seed-text-muted: #64748b;
+  --seed-text-dim: #94a3b8;
+  --seed-scrollbar: #cbd5e1;
+  --seed-scrollbar-hover: #94a3b8;
+  --seed-input-bg: #f8fafc;
+
+  --overlay: rgba(0, 0, 0, 0.25);
+  --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --primary-glow: color-mix(in srgb, var(--seed-primary) 15%, transparent);
+  --selection-bg: color-mix(in srgb, var(--seed-primary) 20%, transparent);
+
+  color-scheme: light;
+}
+
+/* ===== Global resets ===== */
 * {
   box-sizing: border-box;
 }
@@ -9,13 +67,14 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: #0b1220;
+  background: var(--bg);
 }
 body {
-  color: #e2e8f0;
+  color: var(--fg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 #app {
   height: 100%;
@@ -37,17 +96,17 @@ textarea {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--scrollbar);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: var(--scrollbar-hover);
   background-clip: padding-box;
   border: 2px solid transparent;
 }
 ::selection {
-  background: rgba(99, 102, 241, 0.35);
-  color: #fff;
+  background: var(--selection-bg);
+  color: var(--fg);
 }

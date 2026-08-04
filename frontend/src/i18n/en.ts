@@ -94,6 +94,7 @@ const en: LocaleMessages = {
   // settings dialog
   'settings.title': 'Settings',
   'settings.language': 'Language',
+  'settings.theme': 'Theme',
   'settings.about': 'About',
   'settings.close': 'Close',
   // messages
@@ -130,6 +131,9 @@ const en: LocaleMessages = {
   'about.alipay': 'Alipay',
   'about.wechat': 'WeChat',
   'about.qrMissing': 'Drop {file} into frontend/public/',
+  // themes
+  'theme.dark': 'Dark',
+  'theme.light': 'Light',
 }
 
 export default en

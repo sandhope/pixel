@@ -140,14 +140,14 @@ function toast(msg: string) {
     bottom: '20px',
     left: '50%',
     transform: 'translateX(-50%)',
-    background: 'rgba(15,23,42,0.95)',
-    color: '#e2e8f0',
+    background: 'var(--surface)',
+    color: 'var(--fg)',
     padding: '10px 18px',
     borderRadius: '999px',
-    border: '1px solid #334155',
+    border: '1px solid var(--border)',
     fontSize: '13px',
     zIndex: '9999',
-    boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
+    boxShadow: 'var(--shadow)',
     backdropFilter: 'blur(6px)',
   })
   document.body.appendChild(el)
@@ -159,13 +159,13 @@ function toast(msg: string) {
 <style scoped>
 .toolbar {
   height: 56px;
-  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
-  border-bottom: 1px solid #1e293b;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   padding: 0 16px;
   display: flex;
   align-items: center;
   gap: 16px;
-  color: #e2e8f0;
+  color: var(--fg);
 }
 .brand {
   display: flex;
@@ -188,7 +188,7 @@ function toast(msg: string) {
 }
 .brand-text .sub {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .actions {
@@ -203,9 +203,9 @@ function toast(msg: string) {
   display: none;
 }
 .tb {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #cbd5e1;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 12px;
@@ -214,9 +214,9 @@ function toast(msg: string) {
   transition: all 0.15s;
 }
 .tb:hover:not(:disabled) {
-  border-color: #6366f1;
-  background: #1e2540;
-  color: #fff;
+  border-color: var(--primary);
+  background: var(--primary-glow);
+  color: var(--fg);
   transform: translateY(-1px);
 }
 .tb:disabled {
@@ -224,8 +224,8 @@ function toast(msg: string) {
   cursor: not-allowed;
 }
 .tb.primary {
-  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
-  border-color: #4338ca;
+  background: linear-gradient(180deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 80%, #000) 100%);
+  border-color: color-mix(in srgb, var(--primary) 60%, #000);
   color: #fff;
   font-weight: 600;
 }
@@ -233,8 +233,8 @@ function toast(msg: string) {
   filter: brightness(1.08);
 }
 .tb.accent {
-  background: linear-gradient(180deg, #ec4899 0%, #db2777 100%);
-  border-color: #be185d;
+  background: linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 80%, #000) 100%);
+  border-color: color-mix(in srgb, var(--accent) 60%, #000);
   color: #fff;
   font-weight: 600;
 }
@@ -248,27 +248,27 @@ function toast(msg: string) {
 .sep {
   width: 1px;
   height: 22px;
-  background: #334155;
+  background: var(--border);
   margin: 0 6px;
 }
 .export-group {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #0f172a;
+  background: var(--surface);
   padding: 4px 8px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
   border-radius: 10px;
   margin-left: 6px;
 }
 .scale-label {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 .export-group select {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #cbd5e1;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   padding: 4px 6px;
   border-radius: 6px;
   font-size: 12px;
@@ -281,12 +281,12 @@ function toast(msg: string) {
   justify-content: flex-end;
   gap: 10px;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 .status .dot {
   width: 3px;
   height: 3px;
-  background: #334155;
+  background: var(--border);
   border-radius: 999px;
 }
 .busy {

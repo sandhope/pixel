@@ -150,7 +150,7 @@ const presets = [
 .panel-title {
   font-size: 12px;
   letter-spacing: 1px;
-  color: #94a3b8;
+  color: var(--text-muted);
   text-transform: uppercase;
   margin-bottom: 10px;
   font-weight: 600;
@@ -161,8 +161,8 @@ const presets = [
   gap: 8px;
 }
 .shape-item {
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 6px 8px;
   text-align: center;
@@ -171,8 +171,8 @@ const presets = [
   transition: all 0.15s;
 }
 .shape-item:hover {
-  border-color: #6366f1;
-  background: #1e2540;
+  border-color: var(--primary);
+  background: var(--primary-glow);
   transform: translateY(-1px);
 }
 .shape-item:active {
@@ -186,7 +186,7 @@ const presets = [
 }
 .shape-name {
   font-size: 12px;
-  color: #cbd5e1;
+  color: var(--text-muted);
 }
 
 .field-row {
@@ -197,21 +197,21 @@ const presets = [
 }
 .field-row label {
   width: 36px;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 12px;
 }
 .field-row input[type='number'] {
   flex: 1;
-  background: #0f172a;
-  border: 1px solid #334155;
-  color: #e2e8f0;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
   padding: 5px 8px;
   border-radius: 6px;
   font-size: 12px;
 }
 .field-row input[type='number']:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--primary);
 }
 .bg-picker {
   flex: 1;
@@ -223,7 +223,7 @@ const presets = [
   position: relative;
   width: 38px;
   height: 28px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
   padding: 0;
@@ -231,20 +231,20 @@ const presets = [
   cursor: pointer;
 }
 .bg-transparent.active {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
 }
 .checker-bg {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(45deg, #475569 25%, transparent 25%),
-    linear-gradient(-45deg, #475569 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #475569 75%),
-    linear-gradient(-45deg, transparent 75%, #475569 75%);
+    linear-gradient(45deg, var(--text-dim) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--text-dim) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--text-dim) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--text-dim) 75%);
   background-size: 8px 8px;
   background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
-  background-color: #1e293b;
+  background-color: var(--surface-2);
 }
 .bg-transparent .lbl {
   position: absolute;
@@ -252,7 +252,7 @@ const presets = [
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #f1f5f9;
+  color: var(--fg);
   font-size: 10px;
   font-weight: 600;
   mix-blend-mode: difference;
@@ -260,7 +260,7 @@ const presets = [
 .bg-picker input[type='color'] {
   width: 28px;
   height: 28px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0;
   background: transparent;
@@ -274,16 +274,16 @@ const presets = [
   margin-top: 8px;
 }
 .preset-sizes button {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #cbd5e1;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 6px;
   cursor: pointer;
 }
 .preset-sizes button:hover {
-  border-color: #6366f1;
-  background: #1e2540;
+  border-color: var(--primary);
+  background: var(--primary-glow);
 }
 </style>
