@@ -8,8 +8,8 @@ const STORAGE_KEY = 'pixel-editor-state-v1'
 
 function defaultCanvas(): CanvasSettings {
   return {
-    width: 800,
-    height: 600,
+    width: 512,
+    height: 512,
     background: 'transparent',
   }
 }
