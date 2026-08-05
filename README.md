@@ -26,6 +26,9 @@ Build logos from primitive shapes, keep a transparent background, and export cri
 - **Undo / redo** — 50-step history stack (Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y).
 - **Canvas presets** — 512², 1024², 1920×1080, 1200×630, 800×600, plus custom width/height and a transparent / solid-color background toggle.
 - **Dual runtime** — Ships as a Wails desktop app; the frontend can also run standalone via `npm run dev` with a browser-download fallback when the Go backend is absent.
+- **Light & dark themes** — Switch between light and dark appearance in the settings dialog; your choice is persisted to `localStorage`.
+- **Bilingual UI** — Full English and 简体中文 localization; switch language in the settings dialog at any time.
+- **Custom title bar** — Frameless window with a fully custom title bar: drag to move, double-click to maximize / restore, and native-style minimize / maximize / close buttons.
 
 ## 🧱 Tech stack
 
@@ -50,9 +53,11 @@ pixel/
     ├── package.json        # Vue 3.5 + Pinia 2.3 + nanoid 5 + Vite 6
     ├── vite.config.ts      # @ -> src alias
     └── src/
-        ├── main.ts / App.vue / styles/main.css   # dark-theme three-column layout
+        ├── main.ts / App.vue / styles/main.css   # theme-aware three-column layout
         ├── types/shapes.ts                       # Shape union type (9 kinds)
         ├── store/editor.ts                       # Pinia: 50-step undo/redo, align, import/export
+        ├── composables/useTheme.ts               # theme state + persistence
+        ├── i18n/                                 # en.ts / zh-CN.ts / index.ts / types.ts — bilingual UI
         ├── utils/
         │   ├── shapeFactory.ts    # createShape (default params & color rotation per type)
         │   ├── svgRender.ts       # shape -> SVG fragment (polygon/star/path auto-generated points)
@@ -60,10 +65,13 @@ pixel/
         │   └── svgToPng.ts        # SVG Blob -> Image -> Canvas.toDataURL('image/png'), natively transparent
         ├── wails/bindings.ts      # uses window.go.main.App when present, falls back to browser download
         └── components/
+            ├── TitleBar.vue       # custom frameless title bar: drag, double-click maximize, window controls
             ├── Toolbar.vue        # undo/redo, duplicate/delete, open/save project, clear, 1-4x scale, PNG/SVG export
             ├── ShapePanel.vue     # 3-column icon grid (click or drag); canvas size / bg / presets
             ├── EditorCanvas.vue   # SVG canvas: hit-area click / move / 8-way scale / rotate / keyboard / drop
-            └── RightPanel.vue     # layer list (drag-to-reorder) + multi-select align + property panel
+            ├── RightPanel.vue     # layer list (drag-to-reorder) + multi-select align + property panel
+            ├── SettingsDialog.vue # theme switch, language switch
+            └── AboutDialog.vue    # about info, project links
 ```
 
 ## 🚀 Getting started

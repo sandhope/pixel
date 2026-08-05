@@ -26,6 +26,9 @@
 - **撤销 / 重做** — 50 步历史栈（Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y）。
 - **画布预设** — 512²、1024²、1920×1080、1200×630、800×600，以及自定义宽高与透明 / 纯色背景切换。
 - **双模式运行** — 既可作为 Wails 桌面应用启动；前端也可单独 `npm run dev` 启动，在 Go 后端缺失时自动降级为浏览器下载方式。
+- **浅色 / 深色主题** — 在设置对话框中一键切换浅色与深色外观；选择自动保存到 `localStorage`。
+- **中英文切换** — 完整的英文与简体中文本地化；随时在设置对话框中切换界面语言。
+- **自定义标题栏** — 无边框窗口配全自定义标题栏：拖拽移动、双击最大化 / 还原、原生风格的最小化 / 最大化 / 关闭按钮。
 
 ## 🧱 技术栈
 
@@ -50,9 +53,11 @@ pixel/
     ├── package.json        # Vue 3.5 + Pinia 2.3 + nanoid 5 + Vite 6
     ├── vite.config.ts      # @ → src 别名
     └── src/
-        ├── main.ts / App.vue / styles/main.css   # 暗色主题三栏布局
+        ├── main.ts / App.vue / styles/main.css   # 主题感知三栏布局
         ├── types/shapes.ts                       # Shape 联合类型（9 种）
         ├── store/editor.ts                       # Pinia：50 步 undo/redo、对齐、导入导出
+        ├── composables/useTheme.ts               # 主题状态 + 持久化
+        ├── i18n/                                 # en.ts / zh-CN.ts / index.ts / types.ts —— 中英文 UI
         ├── utils/
         │   ├── shapeFactory.ts    # createShape（每种图形默认参数与颜色轮换）
         │   ├── svgRender.ts       # shape -> SVG 片段（polygon/star/path 自动生成点）
@@ -60,10 +65,13 @@ pixel/
         │   └── svgToPng.ts        # SVG Blob -> Image -> Canvas.toDataURL('image/png')，天然透明
         ├── wails/bindings.ts      # 存在 window.go.main.App 时走原生，否则降级浏览器下载
         └── components/
+            ├── TitleBar.vue       # 自定义无边框标题栏：拖拽、双击最大化、窗口控件
             ├── Toolbar.vue        # 撤销重做 / 复制删除 / 打开存项目 / 清空 / 1-4x 缩放 / PNG SVG 导出
             ├── ShapePanel.vue     # 3 列图标库（可点击可拖拽）；画布宽高 / 背景 / 尺寸预设
             ├── EditorCanvas.vue   # SVG 画布：hit-area 点击 / 移动 / 8 向缩放 / 旋转 / 键盘 / 拖放
-            └── RightPanel.vue     # 图层列表（拖拽排序）+ 多选对齐 + 属性面板
+            ├── RightPanel.vue     # 图层列表（拖拽排序）+ 多选对齐 + 属性面板
+            ├── SettingsDialog.vue # 主题切换、语言切换
+            └── AboutDialog.vue    # 关于信息、项目链接
 ```
 
 ## 🚀 快速开始
