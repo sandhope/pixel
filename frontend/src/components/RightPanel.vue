@@ -41,6 +41,8 @@
             >
               {{ s.locked ? '🔒' : '🔓' }}
             </button>
+            <button class="op-btn" @click.stop="editor.moveLayer(s.id, 'up')" :title="t('layer.up')">↑</button>
+            <button class="op-btn" @click.stop="editor.moveLayer(s.id, 'down')" :title="t('layer.down')">↓</button>
             <button class="op-btn danger" @click.stop="remove(s)" :title="t('layer.delete.tip')">✕</button>
           </div>
         </div>
@@ -251,13 +253,7 @@
           />
         </div>
 
-        <div class="section-title sub"><span>{{ t('prop.layerOrder') }}</span></div>
-        <div class="seg order-seg">
-          <button @click="move('bottom')">{{ t('layer.toBottom') }}</button>
-          <button @click="move('down')">{{ t('layer.down') }}</button>
-          <button @click="move('up')">{{ t('layer.up') }}</button>
-          <button @click="move('top')">{{ t('layer.toTop') }}</button>
-        </div>
+
       </div>
     </div>
     <div v-else class="section empty-prop">
@@ -355,9 +351,6 @@ function parseWeight(v: string): number | 'normal' | 'bold' {
   const n = parseInt(v)
   if (Number.isFinite(n)) return n
   return v as any
-}
-function move(dir: 'up' | 'down' | 'top' | 'bottom') {
-  if (editor.activeShape) editor.moveLayer(editor.activeShape.id, dir)
 }
 function thumbBg(shape: Shape): string {
   if (shape.fill && shape.fill !== 'none') return shape.fill as string
@@ -609,9 +602,5 @@ function thumbBg(shape: Shape): string {
 .seg button.on {
   background: var(--primary);
   color: #fff;
-}
-.order-seg button {
-  font-size: 11px;
-  padding: 6px 0;
 }
 </style>
