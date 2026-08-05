@@ -225,8 +225,8 @@ function onCanvasMouseDown(e: MouseEvent) {
 function onShapeMouseDown(e: MouseEvent, s: Shape) {
   if (!s.visible) return
   const additive = e.shiftKey || e.metaKey || e.ctrlKey
-  if (s.locked && !editor.selectedIds.includes(s.id)) {
-    // 锁的图形不允许首次被选（已选中则仍可被操作？这里统一禁止操作锁定）
+  if (s.locked) {
+    // 锁定的图形在画布上不可选中、不可拖动
     return
   }
   editor.selectOne(s.id, additive)
