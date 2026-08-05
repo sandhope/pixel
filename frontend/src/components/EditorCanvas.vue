@@ -111,7 +111,7 @@
               stroke="#6366f1"
               stroke-width="1.5"
               class="handle rotate-handle"
-              style="cursor: grab"
+              style="cursor: default"
               @mousedown.stop="onRotateHandleDown"
             />
           </g>
@@ -246,9 +246,14 @@ const scaleHandles = computed(() => {
   ]
   return positions.map(p => ({
     ...p,
-    cursor: ROTATE_MAP[BASE_CURSORS[p.pos]][step],
+    cursor: getScaleCursor(p.pos, rotation),
   }))
 })
+
+function getScaleCursor(pos: string, rotation: number): string {
+  const step = Math.round((((rotation % 360) + 360) % 360) / 90) % 4
+  return ROTATE_MAP[BASE_CURSORS[pos]][step]
+}
 
 // ---------- 拖动相关 ----------
 type DragMode = null | 'move' | 'scale' | 'rotate'
@@ -316,6 +321,7 @@ function onShapeMouseDown(e: MouseEvent, s: Shape) {
     rot: sh.rotation,
   }))
   drag.shift = e.shiftKey
+  document.body.style.cursor = 'move'
   window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mouseup', onMouseUp)
 }
@@ -332,6 +338,7 @@ function onScaleHandleDown(e: MouseEvent, pos: string) {
   drag.startShapes = [
     { id: s.id, x: s.x, y: s.y, w: s.width, h: s.height, rot: s.rotation },
   ]
+  document.body.style.cursor = getScaleCursor(pos, s.rotation)
   window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mouseup', onMouseUp)
 }
@@ -345,6 +352,7 @@ function onRotateHandleDown(e: MouseEvent) {
   drag.rotateCenter = { x: s.x + s.width / 2, y: s.y + s.height / 2 }
   drag.startAngle = Math.atan2(p.y - drag.rotateCenter.y, p.x - drag.rotateCenter.x)
   drag.startShapes = [{ id: s.id, x: s.x, y: s.y, w: s.width, h: s.height, rot: s.rotation }]
+  document.body.style.cursor = 'crosshair'
   window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mouseup', onMouseUp)
 }
@@ -377,28 +385,49 @@ function onMouseMove(e: MouseEvent) {
     // 手柄在本地空间的固定方向符号
     const sx = pos.includes('r') ? 1 : pos.includes('l') ? -1 : 0
     const sy = pos.includes('b') ? 1 : pos.includes('t') ? -1 : 0
-    // 对角手柄的本地初始半径（从中心到手柄）
-    const baseX = (sx * init.w) / 2
-    const baseY = (sy * init.h) / 2
     let w = init.w
     let h = init.h
-    if (sx !== 0 && baseX !== 0) {
-      w = Math.max(1, init.w * (v.x / v0.x))
-    }
-    if (sy !== 0 && baseY !== 0) {
-      h = Math.max(1, init.h * (v.y / v0.y))
-    }
+    const deltaX = v.x - v0.x
+    const deltaY = v.y - v0.y
     const keepRatio = e.shiftKey || pos === 'br' || pos === 'tl' || pos === 'tr' || pos === 'bl'
     if (keepRatio && (pos === 'tl' || pos === 'tr' || pos === 'bl' || pos === 'br')) {
-      // 对角手柄等比：用本地向量长度比作为统一缩放
-      const len0 = Math.hypot(v0.x, v0.y)
-      const len = Math.hypot(v.x, v.y)
-      const scale = len0 ? len / len0 : 1
+      // 对角等比缩放：固定对角为锚点，用距离比例作为单一缩放因子（fabric.js 方案）
+      const fixedLX = -sx * init.w / 2
+      const fixedLY = -sy * init.h / 2
+      const d0 = Math.hypot(v0.x - fixedLX, v0.y - fixedLY)
+      const d = Math.hypot(v.x - fixedLX, v.y - fixedLY)
+      const scale = d0 > 0 ? d / d0 : 1
       w = Math.max(1, init.w * scale)
       h = Math.max(1, init.h * scale)
+    } else {
+      // 自由缩放：直接用鼠标增量
+      if (sx !== 0) w = Math.max(1, init.w + deltaX * sx)
+      if (sy !== 0) h = Math.max(1, init.h + deltaY * sy)
     }
-    const x = cx - w / 2
-    const y = cy - h / 2
+    // 在本地坐标系中计算新的中心点（固定对应的边/角）
+    let localCx = 0
+    let localCy = 0
+    if (sx === -1) {
+      // 左侧手柄：右边固定，localCx = init.w/2 - w/2
+      localCx = init.w / 2 - w / 2
+    } else if (sx === 1) {
+      // 右侧手柄：左边固定，localCx = -init.w/2 + w/2
+      localCx = -init.w / 2 + w / 2
+    }
+    if (sy === -1) {
+      // 上侧手柄：下边固定，localCy = init.h/2 - h/2
+      localCy = init.h / 2 - h / 2
+    } else if (sy === 1) {
+      // 下侧手柄：上边固定，localCy = -init.h/2 + h/2
+      localCy = -init.h / 2 + h / 2
+    }
+    // 将本地中心反变换回世界坐标
+    const cos2 = Math.cos(rad)
+    const sin2 = Math.sin(rad)
+    const newCx = localCx * cos2 - localCy * sin2 + cx
+    const newCy = localCx * sin2 + localCy * cos2 + cy
+    const x = newCx - w / 2
+    const y = newCy - h / 2
     editor.updateShape(init.id, { x, y, width: w, height: h })
   } else if (drag.mode === 'rotate' && drag.rotateCenter && drag.startShapes[0]) {
     const init = drag.startShapes[0]
@@ -421,6 +450,7 @@ function onMouseUp() {
   drag.handle = undefined
   drag.rotateCenter = undefined
   drag.startAngle = undefined
+  document.body.style.cursor = ''
   window.removeEventListener('mousemove', onMouseMove)
   window.removeEventListener('mouseup', onMouseUp)
 }
@@ -609,7 +639,7 @@ watch(
   display: block;
 }
 .shape-g {
-  cursor: move;
+  cursor: default;
 }
 .shape-g.locked {
   cursor: not-allowed;
@@ -629,10 +659,6 @@ watch(
 }
 .handle {
   vector-effect: non-scaling-stroke;
-}
-.scale-handle:active,
-.rotate-handle:active {
-  cursor: grabbing !important;
 }
 .sel-outline {
   pointer-events: none;
