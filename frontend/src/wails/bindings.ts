@@ -15,7 +15,6 @@ export interface BackendApi {
   SaveSvg(svgContent: string, suggestedName: string): Promise<string | null>
   SaveProjectJson(json: string, suggestedName: string): Promise<string | null>
   LoadProjectJson(): Promise<string | null>
-  GetAppInfo(): Promise<Record<string, string>>
 }
 
 declare global {
@@ -87,9 +86,6 @@ const fallback: BackendApi = {
       }
       input.click()
     })
-  },
-  async GetAppInfo() {
-    return { name: 'Pixel Logo Studio (Web)', version: '1.0.0', cwd: location.href }
   },
 }
 

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -160,20 +159,4 @@ func dataUrlToBytes(dataUrl string) ([]byte, error) {
 		return nil, errors.New("导出数据不是有效 PNG")
 	}
 	return raw, nil
-}
-
-func (a *App) GetAppInfo() map[string]string {
-	return map[string]string{
-		"name":    "Pixel Logo Studio",
-		"version": "1.0.0",
-		"cwd":     mustCwd(),
-	}
-}
-
-func mustCwd() string {
-	cwd, _ := os.Getwd()
-	if cwd == "" {
-		cwd = filepath.Dir(os.Args[0])
-	}
-	return cwd
 }
