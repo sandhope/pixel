@@ -344,7 +344,6 @@ import { computed } from 'vue'
 import { useEditorStore } from '@/store/editor'
 import { t, locale } from '@/i18n'
 import type { Shape } from '@/types/shapes'
-import { shapeInnerSvg } from '@/utils/svgRender'
 
 const editor = useEditorStore()
 const s = computed(() => editor.activeShape)
@@ -452,19 +451,29 @@ function parseWeight(v: string): number | 'normal' | 'bold' {
   return v as any
 }
 function thumbSvg(shape: Shape): string {
-  if (shape.type === 'text') {
-    return (
-      '<text x="12" y="12" dominant-baseline="central" text-anchor="middle" ' +
-      'font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="currentColor">Aa</text>'
-    )
+  const c = shape.fill === 'none' ? 'currentColor' : shape.fill
+  switch (shape.type) {
+    case 'rect':
+      return `<rect x="4" y="6" width="16" height="12" rx="2" fill="${c}"/>`
+    case 'circle':
+      return `<circle cx="12" cy="12" r="7" fill="${c}"/>`
+    case 'ellipse':
+      return `<ellipse cx="12" cy="12" rx="9" ry="6" fill="${c}"/>`
+    case 'line':
+      return `<line x1="3" y1="20" x2="21" y2="4" stroke="${shape.stroke === 'none' ? 'currentColor' : shape.stroke}" stroke-width="2.5" stroke-linecap="round"/>`
+    case 'triangle':
+      return `<polygon points="12,3 22,21 2,21" fill="${c}"/>`
+    case 'polygon':
+      return `<polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="${c}"/>`
+    case 'star':
+      return `<polygon points="12,2 14.5,8.5 21,9.5 16.5,14 17.5,21 12,17.5 6.5,21 7.5,14 3,9.5 9.5,8.5" fill="${c}"/>`
+    case 'path':
+      return `<path d="M12 20 C3 14 2 8 6 4 C9 1 11 3 12 7 C13 3 15 1 18 4 C22 8 21 14 12 20 Z" fill="${c}"/>`
+    case 'text':
+      return `<text x="12" y="14" dominant-baseline="middle" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="${c}">Aa</text>`
+    default:
+      return `<rect x="4" y="4" width="16" height="16" fill="${c}"/>`
   }
-  const w = shape.width || 1
-  const h = shape.height || 1
-  const scale = Math.min(24 / w, 24 / h)
-  const ox = (24 - w * scale) / 2
-  const oy = (24 - h * scale) / 2
-  const inner = shapeInnerSvg(shape)
-  return `<g transform="translate(${ox.toFixed(2)},${oy.toFixed(2)}) scale(${scale.toFixed(3)})">${inner}</g>`
 }
 </script>
 
