@@ -10,12 +10,17 @@ permissions:
 
 jobs:
   build:
-    name: Build (windows/${{ matrix.arch }})
-    runs-on: windows-latest
+    name: Build (${{ matrix.platform }}/${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        arch: [amd64, arm64]
+        include:
+          - { os: windows-latest,  platform: windows, arch: amd64 }
+          - { os: windows-latest,  platform: windows, arch: arm64 }
+          - { os: macos-13,        platform: darwin,  arch: amd64 }
+          - { os: macos-14,        platform: darwin,  arch: arm64 }
+          - { os: ubuntu-latest,   platform: linux,   arch: amd64 }
 
     steps:
       - name: Checkout code
@@ -37,32 +42,69 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
-      - name: Build application
-        run: wails build -platform windows/${{ matrix.arch }} -clean -o pixel.exe
+      - name: Install Linux dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-0 libgtk-3-0 libayatana-appindicator3-dev xdg-utils
 
-      - name: Package artifacts
+      - name: Build application
+        run: wails build -platform ${{ matrix.platform }}/${{ matrix.arch }} -clean -o pixel
+
+      # ---- Windows packaging ----
+      - name: Package (Windows)
+        if: matrix.platform == 'windows'
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}"
           $arch = "${{ matrix.arch }}"
           New-Item -ItemType Directory -Path dist -Force | Out-Null
-
           $exeName = "pixel-$version-windows-$arch.exe"
           $zipName = "pixel-$version-windows-$arch.zip"
           Copy-Item build/bin/pixel.exe "dist/$exeName"
           Compress-Archive -Path build/bin/pixel.exe -DestinationPath "dist/$zipName"
-
-          # Generate SHA-256 checksums so users can verify their downloads.
           foreach ($file in @($exeName, $zipName)) {
             $path = "dist/$file"
             $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLower()
             "$hash *$file" | Out-File -FilePath "$path.sha256" -Encoding ascii
           }
 
+      # ---- macOS packaging ----
+      - name: Package (macOS)
+        if: matrix.platform == 'darwin'
+        shell: bash
+        run: |
+          version="${{ github.ref_name }}"
+          arch="${{ matrix.arch }}"
+          mkdir -p dist
+          cp -R "build/bin/pixel.app" "dist/pixel-$version-macos-$arch.app"
+          tar -czf "dist/pixel-$version-macos-$arch.tar.gz" -C dist "pixel-$version-macos-$arch.app"
+          cd dist
+          for f in "pixel-$version-macos-$arch.tar.gz"; do
+            shasum -a 256 "$f" | awk '{print $1 " *" $2}' > "$f.sha256"
+          done
+          cd ..
+
+      # ---- Linux packaging ----
+      - name: Package (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          version="${{ github.ref_name }}"
+          arch="${{ matrix.arch }}"
+          mkdir -p dist
+          cp build/bin/pixel "dist/pixel-$version-linux-$arch"
+          gzip -c build/bin/pixel > "dist/pixel-$version-linux-$arch.gz"
+          cd dist
+          for f in "pixel-$version-linux-$arch.gz"; do
+            sha256sum "$f" | awk '{print $1 " *" $2}' > "$f.sha256"
+          done
+          cd ..
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.arch }}
+          name: dist-${{ matrix.platform }}-${{ matrix.arch }}
           path: dist/*
           if-no-files-found: error
           retention-days: 7
@@ -70,7 +112,7 @@ jobs:
   release:
     name: Publish GitHub Release
     needs: build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Download all build artifacts
@@ -81,39 +123,40 @@ jobs:
           path: dist
 
       - name: Compose release body (download guide + auto notes)
-        shell: pwsh
         run: |
-          # 1) Let GitHub auto-generate the "What's Changed" section from commits/PRs.
-          $notes = gh api repos/${{ github.repository }}/releases/generate-notes `
-            -f tag_name="${{ github.ref_name }}" `
-            -f target_commitish="${{ github.sha }}" `
-            --jq '.body'
-          if (-not $notes) { $notes = "" }
+          version="${{ github.ref_name }}"
+          notes=$(gh api repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="$version" \
+            -f target_commitish="${{ github.sha }}" \
+            --jq '.body')
+          [ -z "$notes" ] && notes=""
 
-          # 2) Write the bilingual (EN + ZH) file download guide.
-          $guide = @'
+          cat > release_body.md << 'GUIDE'
           ## 📦 Which file should I download? / 该下载哪个文件？
 
-          | File | What it is | 中文说明 | Who should use it |
-          |------|-----------|---------|-------------------|
-          | `pixel-<ver>-windows-amd64.exe` | **Standalone executable** for Intel/AMD (x64) PCs — double-click to run, no installation. | **x64 绿色单文件** — 双击即可运行，无需安装。 | Most users. |
-          | `pixel-<ver>-windows-amd64.zip` | The x64 executable **compressed** into a zip (smaller download). Unzip, then run the exe. | x64 可执行文件的 **压缩包**（体积更小），解压后运行。 | x64 users on slow connections. |
-          | `pixel-<ver>-windows-arm64.exe` | Standalone executable for **ARM64** Windows PCs (e.g. Snapdragon X). | **ARM64 绿色单文件** — 适用于 ARM 架构设备。 | ARM64 device users. |
-          | `pixel-<ver>-windows-arm64.zip` | The ARM64 executable compressed into a zip. | ARM64 可执行文件的压缩包。 | ARM64 users on slow connections. |
-          | `*.sha256` | SHA-256 checksum files — verify your download is complete and untampered. | **SHA-256 校验文件** — 用于核对下载文件是否完整未被篡改。 | Anyone who wants to verify integrity. |
+          | File | Platform | Description | 中文说明 |
+          |------|----------|-------------|---------|
+          | `pixel-<ver>-windows-amd64.exe` | Windows x64 | Standalone executable — double-click to run. | x64 绿色单文件，双击即运行。 |
+          | `pixel-<ver>-windows-amd64.zip` | Windows x64 | Compressed x64 executable. | x64 压缩包，解压后运行。 |
+          | `pixel-<ver>-windows-arm64.exe` | Windows ARM64 | Standalone executable for ARM64. | ARM64 绿色单文件。 |
+          | `pixel-<ver>-windows-arm64.zip` | Windows ARM64 | Compressed ARM64 executable. | ARM64 压缩包。 |
+          | `pixel-<ver>-macos-amd64.tar.gz` | macOS Intel | `.app` bundle — extract, drag to Applications. | Intel Mac 版本，解压后拖入"应用程序"。 |
+          | `pixel-<ver>-macos-arm64.tar.gz` | macOS Apple Silicon | `.app` bundle for M1/M2/M3 Macs. | Apple Silicon 版本（M 系列芯片）。 |
+          | `pixel-<ver>-linux-amd64.gz` | Linux x64 | Gunzip then run `./pixel`. | 解压后执行 `./pixel`。 |
+          | `*.sha256` | All | SHA-256 checksum — verify download integrity. | SHA-256 校验文件，验证完整性。 |
 
-          > **Architecture:** pick **amd64 (x64)** unless you specifically have an ARM64 Windows device.
-          > **架构：** 除非你使用的是 ARM64 设备（如骁龙本），否则请选择 **amd64 (x64)**。
-          > **Note:** all builds require the WebView2 runtime (pre-installed on most Win10/11 systems).
-          > **说明：** 所有构建均需要 WebView2 运行时（大多数 Win10/11 已内置）。
+          > **Windows:** requires [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) (pre-installed on Win10/11).
+          > **Windows:** 需要 [WebView2 运行时](https://developer.microsoft.com/microsoft-edge/webview2/)（Win10/11 已内置）。
+          > **macOS:** Gatekeeper may block unsigned apps — right-click → "Open", or run: `xattr -d com.apple.quarantine /Applications/Pixel\ Logo\ Studio.app`
+          > **macOS:** 未签名应用可能被 Gatekeeper 拦截——右键 → "打开"，或运行：`xattr -d com.apple.quarantine /Applications/Pixel\ Logo\ Studio.app`
+          > **Linux:** requires WebKitGTK (`libwebkit2gtk-4.1-0`).
+          > **Linux:** 需要 WebKitGTK（`libwebkit2gtk-4.1-0`）。
 
           ## What's Changed
 
-          '@
+          GUIDE
 
-          Set-Content -Path release_body.md -Value ($guide + $notes) -Encoding utf8
-        env:
-          GH_TOKEN: ${{ github.token }}
+          echo "$notes" >> release_body.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -124,4 +167,8 @@ jobs:
           files: |
             dist/*.exe
             dist/*.zip
+            dist/*.gz
+            dist/*.tar.gz
             dist/*.sha256
+        env:
+          GH_TOKEN: ${{ github.token }}
