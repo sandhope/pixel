@@ -132,9 +132,9 @@ wails build
 3. **PNG 导出** — `new Image()` 加载 SVG Blob → `ctx.clearRect` 清空 Canvas（= 透明）→ `drawImage` 光栅化 → `toDataURL('image/png')` 产出带 alpha 的透明 PNG。
 4. **校验** — Go 后端写盘前检查 PNG 8 字节魔数（`89 50 4E 47 0D 0A 1A 0A`），损坏的内容不会落到磁盘。
 
-## 📄 许可证
+## 🖼️ 软件截图
 
-MIT — 随意使用、二次开发、发布你的 Logo。
+> ![Pixel Logo Studio 截图](./screenshots/zh.png)
 
 ## 支持项目
 
