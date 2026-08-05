@@ -10,7 +10,7 @@ const en: LocaleMessages = {
   'toolbar.redo.tip': 'Redo (Ctrl+Y)',
   'toolbar.duplicate': '⧉ Duplicate',
   'toolbar.duplicate.tip': 'Duplicate (Ctrl+D)',
-  'toolbar.delete': '🗑 Delete',
+  'toolbar.delete': 'Delete',
   'toolbar.delete.tip': 'Delete (Del)',
   'toolbar.open': '📂 Open',
   'toolbar.open.tip': 'Open project (.pixel.json)',

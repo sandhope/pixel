@@ -5,7 +5,16 @@
       <button class="tb" @click="redo" :disabled="!editor.canRedo" :title="t('toolbar.redo.tip')">{{ t('toolbar.redo') }}</button>
       <span class="sep"></span>
       <button class="tb" @click="duplicate" :disabled="editor.selectedShapes.length===0" :title="t('toolbar.duplicate.tip')">{{ t('toolbar.duplicate') }}</button>
-      <button class="tb danger" @click="editor.deleteSelection()" :disabled="editor.selectedShapes.length===0" :title="t('toolbar.delete.tip')">{{ t('toolbar.delete') }}</button>
+      <button class="tb danger" @click="editor.deleteSelection()" :disabled="editor.selectedShapes.length===0" :title="t('toolbar.delete.tip')">
+        <svg class="tb-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          <path d="M10 11v6"></path>
+          <path d="M14 11v6"></path>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+        </svg>
+        {{ t('toolbar.delete') }}
+      </button>
       <span class="sep"></span>
       <button class="tb" @click="openProject" :title="t('toolbar.open.tip')">{{ t('toolbar.open') }}</button>
       <button class="tb" @click="saveProject" :title="t('toolbar.save.tip')">{{ t('toolbar.save') }}</button>
@@ -169,6 +178,9 @@ function toast(msg: string) {
   display: none;
 }
 .tb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--text-muted);
@@ -178,6 +190,9 @@ function toast(msg: string) {
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
+}
+.tb-icon {
+  flex: none;
 }
 .tb:hover:not(:disabled) {
   border-color: var(--primary);
@@ -207,9 +222,13 @@ function toast(msg: string) {
 .tb.accent:hover:not(:disabled) {
   filter: brightness(1.08);
 }
+.tb.danger {
+  color: #f87171;
+}
 .tb.danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.12);
   border-color: #ef4444;
-  color: #fecaca;
+  color: #ef4444;
 }
 .sep {
   width: 1px;

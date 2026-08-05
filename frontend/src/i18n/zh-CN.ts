@@ -10,7 +10,7 @@ const zhCN: LocaleMessages = {
   'toolbar.redo.tip': '重做 (Ctrl+Y)',
   'toolbar.duplicate': '⧉ 复制',
   'toolbar.duplicate.tip': '复制 (Ctrl+D)',
-  'toolbar.delete': '🗑 删除',
+  'toolbar.delete': '删除',
   'toolbar.delete.tip': '删除 (Del)',
   'toolbar.open': '📂 打开',
   'toolbar.open.tip': '打开项目 (.pixel.json)',
