@@ -9,9 +9,7 @@
       <main class="center-pane">
         <EditorCanvas />
       </main>
-      <aside class="right-pane">
-        <RightPanel />
-      </aside>
+      <RightPanel />
     </div>
     <SettingsDialog :visible="showSettings" @close="showSettings = false" />
     <AboutDialog v-if="showAbout" @close="showAbout = false" />
@@ -67,10 +65,5 @@ const showAbout = ref(false)
   flex-direction: column;
   overflow: hidden;
   position: relative;
-}
-.right-pane {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 </style>

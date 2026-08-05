@@ -361,10 +361,11 @@ function thumbBg(shape: Shape): string {
 
 <style scoped>
 .right-panel {
+  flex-shrink: 0;
   width: 280px;
-  min-width: 280px;
-  border-left: 1px solid var(--border);
+  min-width: 260px;
   background: var(--surface);
+  border-left: 1px solid var(--border);
   overflow-y: auto;
   padding: 14px 14px 20px;
   color: var(--fg);
