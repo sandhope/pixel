@@ -242,26 +242,24 @@
             <label>{{ t('prop.text') }}</label>
             <input type="text" :value="(s as any).text" @change="updAny({ text: val($event) })" />
           </div>
-          <div class="field-row two">
-            <div>
-              <label>{{ t('prop.fontSize') }}</label>
-              <input
-                type="number"
-                min="8"
-                :value="(s as any).fontSize"
-                @change="updAny({ fontSize: Math.max(8, numVal($event)) })"
-              />
-            </div>
-            <div>
-              <label>{{ t('prop.fontWeight') }}</label>
-              <select :value="String((s as any).fontWeight)" @change="updAny({ fontWeight: parseWeight(val($event)) })">
-                <option value="300">{{ t('font.weight300') }}</option>
-                <option value="400">{{ t('font.weight400') }}</option>
-                <option value="600">{{ t('font.weight600') }}</option>
-                <option value="700">{{ t('font.weight700') }}</option>
-                <option value="900">{{ t('font.weight900') }}</option>
-              </select>
-            </div>
+          <div class="field-row">
+            <label>{{ t('prop.fontSize') }}</label>
+            <input
+              type="number"
+              min="8"
+              :value="(s as any).fontSize"
+              @change="updAny({ fontSize: Math.max(8, numVal($event)) })"
+            />
+          </div>
+          <div class="field-row">
+            <label>{{ t('prop.fontWeight') }}</label>
+            <select :value="String((s as any).fontWeight)" @change="updAny({ fontWeight: parseWeight(val($event)) })">
+              <option value="300">{{ t('font.weight300') }}</option>
+              <option value="400">{{ t('font.weight400') }}</option>
+              <option value="600">{{ t('font.weight600') }}</option>
+              <option value="700">{{ t('font.weight700') }}</option>
+              <option value="900">{{ t('font.weight900') }}</option>
+            </select>
           </div>
           <div class="field-row">
             <label>{{ t('prop.fontFamily') }}</label>
