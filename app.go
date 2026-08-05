@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"image/png"
 	"os"
 	"path/filepath"
 	"strings"
@@ -162,26 +160,6 @@ func dataUrlToBytes(dataUrl string) ([]byte, error) {
 		return nil, errors.New("导出数据不是有效 PNG")
 	}
 	return raw, nil
-}
-
-// PreviewPngBase64 可选：若前端需要后端转 canvas（现在前端自己做更可靠，此函数仅保留占位）
-// 为了保持向后兼容，这里直接返回传入 dataUrl 的 payload 部分（不做转换）
-func (a *App) PreviewPngBase64(svgContent string, width int, height int) (string, error) {
-	// 返回占位，前端使用自身的 canvas 转换逻辑
-	_ = svgContent
-	_ = width
-	_ = height
-	return "", errors.New("请使用前端 Canvas 导出 PNG 预览；此接口保留未启用")
-}
-
-// PngBytesDataUrl 纯字节 PNG => dataURL（备用）
-func PngBytesDataUrl(b []byte) string {
-	if len(b) == 0 {
-		return ""
-	}
-	_ = png.Encode // keep import
-	_ = bytes.Buffer{}
-	return "data:image/png;base64," + base64.StdEncoding.EncodeToString(b)
 }
 
 func (a *App) GetAppInfo() map[string]string {

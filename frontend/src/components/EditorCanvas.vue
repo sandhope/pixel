@@ -220,11 +220,6 @@ function onSvgMouseDown() {
 function onCanvasMouseDown(e: MouseEvent) {
   editor.clearSelection()
   focusViewport()
-  const { mode: _m, ...rest } = drag as any
-  void _m
-  void rest
-  // 允许开始框选（先不实现多框选，仅清除选择）
-  void e
 }
 
 function onShapeMouseDown(e: MouseEvent, s: Shape) {

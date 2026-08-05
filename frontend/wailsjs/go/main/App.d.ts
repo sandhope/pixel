@@ -5,8 +5,6 @@ export function GetAppInfo():Promise<Record<string, string>>;
 
 export function LoadProjectJson():Promise<string>;
 
-export function PreviewPngBase64(arg1:string,arg2:number,arg3:number):Promise<string>;
-
 export function SavePngDataUrl(arg1:string,arg2:string):Promise<string>;
 
 export function SaveProjectJson(arg1:string,arg2:string):Promise<string>;

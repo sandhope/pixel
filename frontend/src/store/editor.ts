@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
+import { nanoid } from 'nanoid'
 import type { ProjectState, Shape, CanvasSettings, ShapeType } from '@/types/shapes'
 import { createShape } from '@/utils/shapeFactory'
 import { buildExportSvg } from '@/utils/exportSvg'
@@ -172,7 +173,7 @@ export const useEditorStore = defineStore('editor', () => {
       const src = shapes.value[idx]
       const copy: Shape = { ...src, x: src.x + 20, y: src.y + 20 } as Shape
       // 重新生成 id 以避免冲突
-      copy.id = Math.random().toString(36).slice(2, 12)
+      copy.id = nanoid(10)
       shapes.value.push(copy)
       newIds.push(copy.id)
     }

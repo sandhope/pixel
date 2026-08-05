@@ -10,10 +10,6 @@ export function LoadProjectJson() {
   return window['go']['main']['App']['LoadProjectJson']();
 }
 
-export function PreviewPngBase64(arg1, arg2, arg3) {
-  return window['go']['main']['App']['PreviewPngBase64'](arg1, arg2, arg3);
-}
-
 export function SavePngDataUrl(arg1, arg2) {
   return window['go']['main']['App']['SavePngDataUrl'](arg1, arg2);
 }
