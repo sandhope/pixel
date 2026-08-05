@@ -95,9 +95,9 @@
             />
             <!-- 旋转手柄：顶部中点往上延伸 24px -->
             <line
-              x1="box.w / 2"
+              :x1="box.w / 2"
               y1="0"
-              x2="box.w / 2"
+              :x2="box.w / 2"
               y2="-28"
               stroke="#6366f1"
               stroke-width="1.5"
