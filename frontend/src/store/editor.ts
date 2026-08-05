@@ -33,8 +33,9 @@ export const useEditorStore = defineStore('editor', () => {
   const dirty = ref(false)
 
   // ----- history (简单 undo/redo，最多 50 步) -----
-  const past: string[] = []
-  const future: string[] = []
+  // 注意：必须用 ref 包裹，computed 才能追踪长度变化，否则按钮永远 disabled
+  const past = ref<string[]>([])
+  const future = ref<string[]>([])
   const HISTORY_LIMIT = 50
 
   function snapshot(): string {
@@ -51,28 +52,28 @@ export const useEditorStore = defineStore('editor', () => {
   }
   function commit() {
     const snap = snapshot()
-    if (past[past.length - 1] === snap) return
-    past.push(snap)
-    if (past.length > HISTORY_LIMIT) past.shift()
-    future.length = 0
+    if (past.value[past.value.length - 1] === snap) return
+    past.value.push(snap)
+    if (past.value.length > HISTORY_LIMIT) past.value.shift()
+    future.value.length = 0
     dirty.value = true
   }
   function undo() {
-    if (past.length === 0) return
+    if (past.value.length === 0) return
     const cur = snapshot()
-    const prev = past.pop()!
-    future.push(cur)
+    const prev = past.value.pop()!
+    future.value.push(cur)
     restore(prev)
   }
   function redo() {
-    if (future.length === 0) return
+    if (future.value.length === 0) return
     const cur = snapshot()
-    const next = future.pop()!
-    past.push(cur)
+    const next = future.value.pop()!
+    past.value.push(cur)
     restore(next)
   }
-  const canUndo = computed(() => past.length > 0)
-  const canRedo = computed(() => future.length > 0)
+  const canUndo = computed(() => past.value.length > 0)
+  const canRedo = computed(() => future.value.length > 0)
 
   // ----- selectors -----
   const selectedShapes = computed(() =>
