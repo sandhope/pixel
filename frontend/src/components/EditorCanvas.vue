@@ -43,6 +43,7 @@
           }"
           :transform="shapeTransform(s)"
           @mousedown.stop="onShapeMouseDown($event, s)"
+          @dblclick.stop="onShapeDblClick($event, s)"
         >
           <!-- hit-area 用于透明填充时仍可选中；line 类型不做此处理 -->
           <rect
@@ -54,7 +55,11 @@
             :height="s.height + 8"
             fill="transparent"
           />
-          <g class="shape-inner" v-html="shapeInnerSvg(s)"></g>
+          <g
+            class="shape-inner"
+            :class="{ 'editing-hidden': editingTextId === s.id && s.type === 'text' }"
+            v-html="shapeInnerSvg(s)"
+          ></g>
         </g>
 
         <!-- 选中外框 & 操作手柄 -->
@@ -112,6 +117,18 @@
           </g>
         </template>
       </svg>
+
+      <!-- 文字编辑 input 层 -->
+      <input
+        v-if="editingTextShape"
+        ref="editingInputRef"
+        v-model="editingTextValue"
+        class="text-edit-input"
+        :style="editingInputStyle"
+        @blur="onInputBlur"
+        @keyup="onInputKeyup"
+        @mousedown.stop
+      />
     </div>
 
     <div class="canvas-hint" v-if="editor.shapes.length === 0">
@@ -132,6 +149,11 @@ const editor = useEditorStore()
 const viewportEl = ref<HTMLDivElement>()
 const svgEl = ref<SVGSVGElement>()
 
+// 文字编辑状态
+const editingTextId = ref<string | null>(null)
+const editingInputRef = ref<HTMLInputElement>()
+const editingTextValue = ref('')
+
 // 选中框（屏幕坐标系下的包围盒，但这里直接拿 active shape 的自身坐标）
 interface SelBox {
   x: number
@@ -145,6 +167,35 @@ const box = computed<SelBox | null>(() => {
   const s = editor.activeShape
   if (!s) return null
   return { x: s.x, y: s.y, w: s.width, h: s.height, rotation: s.rotation, locked: s.locked }
+})
+
+// 正在编辑的文字形状
+const editingTextShape = computed(() => {
+  if (!editingTextId.value) return null
+  return editor.shapes.find((s) => s.id === editingTextId.value && s.type === 'text') as import('@/types/shapes').TextShape | undefined
+})
+
+// 编辑输入框的样式位置（在 SVG 坐标系中）
+const editingInputStyle = computed(() => {
+  const s = editingTextShape.value
+  if (!s) return {}
+  const weight = s.fontWeight
+  const align = s.textAlign || 'left'
+  return {
+    left: `${s.x}px`,
+    top: `${s.y}px`,
+    width: `${s.width}px`,
+    height: `${s.height}px`,
+    transform: `rotate(${s.rotation || 0}deg)`,
+    transformOrigin: 'center center',
+    position: 'absolute',
+    fontSize: `${s.fontSize}px`,
+    fontFamily: s.fontFamily,
+    fontWeight: weight,
+    textAlign: align,
+    lineHeight: `${s.lineHeight}`,
+    color: s.fill === 'none' ? '#000' : s.fill,
+  }
 })
 
 function shapeTransform(s: Shape): string {
@@ -423,6 +474,64 @@ function onDrop(e: DragEvent) {
   editor.insertShapeAt(shapeType, p.x, p.y)
 }
 
+// ---------- 文字双击编辑 ----------
+function onShapeDblClick(e: MouseEvent, s: Shape) {
+  if (s.type !== 'text') return
+  e.stopPropagation()
+  
+  // 先取消当前拖动状态
+  if (drag.mode) {
+    drag.mode = null
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', onMouseUp)
+  }
+  
+  const textShape = s as import('@/types/shapes').TextShape
+  editingTextId.value = s.id
+  editingTextValue.value = textShape.text
+  
+  // 聚焦输入框，光标定位到文字末尾
+  nextTick(() => {
+    if (editingInputRef.value) {
+      const el = editingInputRef.value
+      el.focus()
+      const len = el.value.length
+      el.setSelectionRange(len, len)
+    }
+  })
+}
+
+function onInputBlur() {
+  if (!editingTextId.value) return
+  saveAndExitEdit()
+}
+
+function onInputKeyup(e: KeyboardEvent) {
+  if (e.key === 'Enter') {
+    saveAndExitEdit()
+  } else if (e.key === 'Escape') {
+    // ESC 取消编辑，恢复原值
+    cancelEdit()
+  }
+}
+
+function saveAndExitEdit() {
+  if (!editingTextId.value) return
+  const newText = editingTextValue.value
+  editor.updateShape(editingTextId.value, { text: newText })
+  editor.commit()
+  exitEdit()
+}
+
+function cancelEdit() {
+  exitEdit()
+}
+
+function exitEdit() {
+  editingTextId.value = null
+  editingTextValue.value = ''
+}
+
 onMounted(() => {
   // 加载本地缓存
   editor.loadFromStorage()
@@ -489,6 +598,9 @@ watch(
   opacity: 0.4;
   pointer-events: none;
 }
+.shape-g .shape-inner.editing-hidden {
+  visibility: hidden;
+}
 .shape-g.selected .hit-area {
   /* visible only when dev needed */
 }
@@ -519,5 +631,20 @@ watch(
   border: 1px solid var(--border);
   backdrop-filter: blur(4px);
   pointer-events: none;
+}
+.text-edit-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  caret-color: currentColor;
+  min-width: 0;
+  box-sizing: border-box;
+  z-index: 100;
+}
+.text-edit-input::selection {
+  background: color-mix(in srgb, var(--primary) 30%, transparent);
 }
 </style>
