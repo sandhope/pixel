@@ -68,6 +68,7 @@ export interface LocaleMessages {
   'layer.toBottom': string
   'layer.down': string
   'layer.up': string
+  'layer.dragTip': string
   'layer.toTop': string
   'layer.empty': string
   'layer.visible.tip': string

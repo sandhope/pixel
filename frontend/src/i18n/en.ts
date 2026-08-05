@@ -68,6 +68,7 @@ const en: LocaleMessages = {
   'layer.toBottom': 'To bottom',
   'layer.down': 'Down',
   'layer.up': 'Up',
+  'layer.dragTip': 'Drag to reorder',
   'layer.toTop': 'To top',
   'layer.empty': 'No layers yet — add a shape from the left ~',
   'layer.visible.tip': 'Show / hide',

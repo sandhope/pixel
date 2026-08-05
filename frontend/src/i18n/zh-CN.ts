@@ -68,6 +68,7 @@ const zhCN: LocaleMessages = {
   'layer.toBottom': '到底层',
   'layer.down': '下移',
   'layer.up': '上移',
+  'layer.dragTip': '拖动调整顺序',
   'layer.toTop': '到顶层',
   'layer.empty': '暂无图层，从左侧添加图形吧～',
   'layer.visible.tip': '显示/隐藏',

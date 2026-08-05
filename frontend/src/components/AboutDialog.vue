@@ -83,7 +83,7 @@ import { BrowserOpenURL } from '../../wailsjs/runtime/runtime'
 const emit = defineEmits<{ close: [] }>()
 
 const APP_VERSION = '1.0.0'
-const PROJECT_URL = 'https://github.com/user/pixel'
+const PROJECT_URL = 'https://github.com/sandhope/pixel'
 // 英文模式下的捐赠地址，按需修改
 const DONATE_URL = 'https://opencollective.com/sandhope'
 

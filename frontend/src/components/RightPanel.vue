@@ -14,14 +14,30 @@
             active: editor.selectedIds.includes(s.id),
             hidden: !s.visible,
             locked: s.locked,
+            'drop-before': dropTarget === s.id && dropPlace === 'before',
+            'drop-after': dropTarget === s.id && dropPlace === 'after',
           }"
-          draggable="true"
-          @dragstart="onDragStart($event, s.id)"
-          @dragover.prevent
+          @dragover.prevent="onRowDragOver($event, s.id)"
+          @dragleave="onRowDragLeave(s.id)"
           @drop="onDrop($event, s.id)"
           @click="onClickLayer(s, $event)"
         >
-          <span class="grip">⋮⋮</span>
+          <span
+            class="grip"
+            draggable="true"
+            @dragstart="onGripDragStart($event, s.id)"
+            @dragend="onGripDragEnd"
+            :title="t('layer.dragTip')"
+          >
+            <svg class="ico" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+              <circle cx="9" cy="6" r="1.6" />
+              <circle cx="15" cy="6" r="1.6" />
+              <circle cx="9" cy="12" r="1.6" />
+              <circle cx="15" cy="12" r="1.6" />
+              <circle cx="9" cy="18" r="1.6" />
+              <circle cx="15" cy="18" r="1.6" />
+            </svg>
+          </span>
           <span class="thumb" :style="{ background: thumbBg(s) }"></span>
           <span class="name" :title="s.name">{{ s.name }}</span>
           <div class="ops">
@@ -97,18 +113,6 @@
               >
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-              </svg>
-            </button>
-            <button class="op-btn" @click.stop="editor.moveLayer(s.id, 'up')" :title="t('layer.up')">
-              <svg class="ico" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="19" x2="12" y2="5" />
-                <polyline points="5 12 12 5 19 12" />
-              </svg>
-            </button>
-            <button class="op-btn" @click.stop="editor.moveLayer(s.id, 'down')" :title="t('layer.down')">
-              <svg class="ico" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <polyline points="19 12 12 19 5 12" />
               </svg>
             </button>
             <button class="op-btn danger" @click.stop="remove(s)" :title="t('layer.delete.tip')">
@@ -378,21 +382,42 @@ function onClickLayer(sh: Shape, e: MouseEvent) {
   editor.selectOne(sh.id, add)
 }
 let dragId: string | null = null
-function onDragStart(e: DragEvent, id: string) {
+let dropTarget: string | null = null
+let dropPlace: 'before' | 'after' = 'before'
+function onGripDragStart(e: DragEvent, id: string) {
   dragId = id
   if (e.dataTransfer) {
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', id)
   }
 }
-function onDrop(e: DragEvent, targetId: string) {
+function onGripDragEnd() {
+  dragId = null
+  dropTarget = null
+}
+function onRowDragOver(e: DragEvent, targetId: string) {
   if (!dragId || dragId === targetId) return
   const list = [...editor.shapes].reverse()
-  const di = list.findIndex((x) => x.id === dragId)
   const ti = list.findIndex((x) => x.id === targetId)
-  const place: 'before' | 'after' = di < ti ? 'after' : 'before'
-  editor.reorder(dragId, targetId, place)
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  const before = e.clientY < rect.top + rect.height / 2
+  dropTarget = targetId
+  dropPlace = before ? 'before' : 'after'
+}
+function onRowDragLeave(targetId: string) {
+  if (dropTarget === targetId) {
+    dropTarget = null
+  }
+}
+function onDrop(e: DragEvent, targetId: string) {
+  if (!dragId || dragId === targetId) {
+    dragId = null
+    dropTarget = null
+    return
+  }
+  editor.reorder(dragId, targetId, dropPlace)
   dragId = null
+  dropTarget = null
   void e
 }
 
@@ -519,9 +544,21 @@ function thumbBg(shape: Shape): string {
 }
 .grip {
   color: var(--text-dim);
-  font-size: 10px;
-  letter-spacing: -1px;
   cursor: grab;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.grip:active {
+  cursor: grabbing;
+}
+.drop-before {
+  border-top-color: var(--primary) !important;
+  box-shadow: inset 0 2px 0 var(--primary);
+}
+.drop-after {
+  border-bottom-color: var(--primary) !important;
+  box-shadow: inset 0 -2px 0 var(--primary);
 }
 .thumb {
   width: 16px;
