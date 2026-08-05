@@ -7,6 +7,8 @@ Build logos from primitive shapes, keep a transparent background, and export cri
 
 [简体中文](./README.zh-CN.md) · English
 
+![Pixel Logo Studio Screenshot](./screenshots/en.png)
+
 </div>
 
 ---
@@ -131,7 +133,3 @@ wails build
 2. **SVG export** — A background `<rect>` is only appended when the user picks a solid color; otherwise the SVG stays transparent.
 3. **PNG export** — `new Image()` loads the SVG blob, `ctx.clearRect` zeroes the canvas (= transparent), `drawImage` rasterizes, `toDataURL('image/png')` produces a transparent RGBA PNG.
 4. **Validation** — The Go backend checks the 8-byte PNG magic (`89 50 4E 47 0D 0A 1A 0A`) before writing, so corrupt payloads can never reach disk.
-
-## 🖼️ Screenshots
-
-![Pixel Logo Studio Screenshot](./screenshots/en.png)

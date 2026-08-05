@@ -7,6 +7,8 @@
 
 [English](./README.md) · 简体中文
 
+![Pixel Logo Studio 截图](./screenshots/zh.png)
+
 </div>
 
 ---
@@ -131,10 +133,6 @@ wails build
 2. **SVG 导出** — 仅当用户选择了具体背景色才追加底层 `<rect>`；透明时不写 → SVG 天然透明。
 3. **PNG 导出** — `new Image()` 加载 SVG Blob → `ctx.clearRect` 清空 Canvas（= 透明）→ `drawImage` 光栅化 → `toDataURL('image/png')` 产出带 alpha 的透明 PNG。
 4. **校验** — Go 后端写盘前检查 PNG 8 字节魔数（`89 50 4E 47 0D 0A 1A 0A`），损坏的内容不会落到磁盘。
-
-## 🖼️ 软件截图
-
-> ![Pixel Logo Studio 截图](./screenshots/zh.png)
 
 ## 支持项目
 
