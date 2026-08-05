@@ -38,7 +38,9 @@
               <circle cx="15" cy="18" r="1.6" />
             </svg>
           </span>
-          <span class="thumb" :style="{ background: thumbBg(s) }"></span>
+          <span class="thumb">
+            <svg viewBox="0 0 24 24" width="18" height="18" v-html="thumbSvg(s)"></svg>
+          </span>
           <span class="name" :title="s.name">{{ s.name }}</span>
           <div class="ops">
             <button
@@ -344,6 +346,7 @@ import { computed } from 'vue'
 import { useEditorStore } from '@/store/editor'
 import { t, locale } from '@/i18n'
 import type { Shape } from '@/types/shapes'
+import { shapeInnerSvg } from '@/utils/svgRender'
 
 const editor = useEditorStore()
 const s = computed(() => editor.activeShape)
@@ -450,10 +453,20 @@ function parseWeight(v: string): number | 'normal' | 'bold' {
   if (Number.isFinite(n)) return n
   return v as any
 }
-function thumbBg(shape: Shape): string {
-  if (shape.fill && shape.fill !== 'none') return shape.fill as string
-  if (shape.stroke && shape.stroke !== 'none') return shape.stroke as string
-  return '#475569'
+function thumbSvg(shape: Shape): string {
+  if (shape.type === 'text') {
+    return (
+      '<text x="12" y="12" dominant-baseline="central" text-anchor="middle" ' +
+      'font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="currentColor">Aa</text>'
+    )
+  }
+  const w = shape.width || 1
+  const h = shape.height || 1
+  const scale = Math.min(24 / w, 24 / h)
+  const ox = (24 - w * scale) / 2
+  const oy = (24 - h * scale) / 2
+  const inner = shapeInnerSvg(shape)
+  return `<g transform="translate(${ox.toFixed(2)},${oy.toFixed(2)}) scale(${scale.toFixed(3)})">${inner}</g>`
 }
 </script>
 
@@ -561,11 +574,14 @@ function thumbBg(shape: Shape): string {
   box-shadow: inset 0 -2px 0 var(--primary);
 }
 .thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--text);
 }
 .name {
   flex: 1;
