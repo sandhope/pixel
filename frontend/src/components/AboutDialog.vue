@@ -130,7 +130,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   justify-content: center;
 }
 .about-card {
-  width: 400px;
+  width: 520px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -258,20 +258,21 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   text-align: center;
 }
 .qr-frame {
-  width: 140px;
-  height: 140px;
+  width: 220px;
+  height: 220px;
   background: #fff;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: 12px;
   border: 1px solid var(--border);
 }
 .qr-frame img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 .qr-missing {
   font-size: 10px;
