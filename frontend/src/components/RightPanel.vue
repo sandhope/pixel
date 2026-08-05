@@ -72,42 +72,40 @@
             <label>X</label>
             <input type="number" :value="num(s!.x)" @change="upd({ x: numVal($event) })" />
           </div>
-          <div>
-            <label>Y</label>
-            <input type="number" :value="num(s!.y)" @change="upd({ y: numVal($event) })" />
-          </div>
+        </div>
+        <div class="field-row">
+          <label>Y</label>
+          <input type="number" :value="num(s!.y)" @change="upd({ y: numVal($event) })" />
         </div>
         <div class="field-row two">
           <div>
             <label>{{ t('panel.width') }}</label>
             <input type="number" :value="num(s!.width)" min="1" @change="upd({ width: numVal($event) })" />
           </div>
-          <div>
-            <label>{{ t('panel.height') }}</label>
-            <input type="number" :value="num(s!.height)" min="1" @change="upd({ height: numVal($event) })" />
-          </div>
         </div>
-        <div class="field-row two">
-          <div>
-            <label>{{ t('prop.rotation') }}</label>
-            <input
-              type="number"
-              :value="num(s!.rotation)"
-              min="0"
-              max="360"
-              @change="upd({ rotation: ((numVal($event) % 360) + 360) % 360 })"
-            />
-          </div>
-          <div>
-            <label>{{ t('prop.opacity') }}</label>
-            <input
-              type="number"
-              :value="Math.round((s!.opacity as number) * 100)"
-              min="0"
-              max="100"
-              @change="upd({ opacity: clamp01(numVal($event) / 100) })"
-            />
-          </div>
+        <div class="field-row">
+          <label>{{ t('panel.height') }}</label>
+          <input type="number" :value="num(s!.height)" min="1" @change="upd({ height: numVal($event) })" />
+        </div>
+        <div class="field-row">
+          <label>{{ t('prop.rotation') }}</label>
+          <input
+            type="number"
+            :value="num(s!.rotation)"
+            min="0"
+            max="360"
+            @change="upd({ rotation: ((numVal($event) % 360) + 360) % 360 })"
+          />
+        </div>
+        <div class="field-row">
+          <label>{{ t('prop.opacity') }}</label>
+          <input
+            type="number"
+            :value="Math.round((s!.opacity as number) * 100)"
+            min="0"
+            max="100"
+            @change="upd({ opacity: clamp01(numVal($event) / 100) })"
+          />
         </div>
 
         <template v-if="s!.type === 'rect'">
@@ -133,17 +131,17 @@
                 @change="updAny({ points: clampI(numVal($event), 3, 24) })"
               />
             </div>
-            <div>
-              <label>{{ t('prop.innerRatio') }}</label>
-              <input
-                type="number"
-                min="0.1"
-                max="0.95"
-                step="0.05"
-                :value="(s as any).innerRatio"
-                @change="updAny({ innerRatio: clamp(numVal($event), 0.1, 0.95) })"
-              />
-            </div>
+          </div>
+          <div class="field-row">
+            <label>{{ t('prop.innerRatio') }}</label>
+            <input
+              type="number"
+              min="0.1"
+              max="0.95"
+              step="0.05"
+              :value="(s as any).innerRatio"
+              @change="updAny({ innerRatio: clamp(numVal($event), 0.1, 0.95) })"
+            />
           </div>
         </template>
         <template v-if="s!.type === 'polygon'">
@@ -227,32 +225,30 @@
             />
           </div>
         </div>
-        <div class="field-row two">
-          <div>
-            <label>{{ t('prop.stroke') }}</label>
-            <div class="color-pick">
-              <button
-                class="none-btn"
-                :class="{ on: s!.stroke === 'none' }"
-                @click="upd({ stroke: 'none', strokeWidth: s!.stroke === 'none' ? (s!.strokeWidth || 2) : s!.strokeWidth })"
-              >∅</button>
-              <input
-                type="color"
-                :value="s!.stroke === 'none' ? '#000000' : s!.stroke"
-                @input="upd({ stroke: val($event), strokeWidth: s!.strokeWidth || 2 })"
-              />
-            </div>
-          </div>
-          <div>
-            <label>{{ t('prop.strokeWidth') }}</label>
+        <div class="field-row">
+          <label>{{ t('prop.stroke') }}</label>
+          <div class="color-pick">
+            <button
+              class="none-btn"
+              :class="{ on: s!.stroke === 'none' }"
+              @click="upd({ stroke: 'none', strokeWidth: s!.stroke === 'none' ? (s!.strokeWidth || 2) : s!.strokeWidth })"
+            >∅</button>
             <input
-              type="number"
-              min="0"
-              step="0.5"
-              :value="s!.strokeWidth"
-              @change="upd({ strokeWidth: Math.max(0, numVal($event)) })"
+              type="color"
+              :value="s!.stroke === 'none' ? '#000000' : s!.stroke"
+              @input="upd({ stroke: val($event), strokeWidth: s!.strokeWidth || 2 })"
             />
           </div>
+        </div>
+        <div class="field-row">
+          <label>{{ t('prop.strokeWidth') }}</label>
+          <input
+            type="number"
+            min="0"
+            step="0.5"
+            :value="s!.strokeWidth"
+            @change="upd({ strokeWidth: Math.max(0, numVal($event)) })"
+          />
         </div>
 
         <div class="section-title sub"><span>{{ t('prop.layerOrder') }}</span></div>
