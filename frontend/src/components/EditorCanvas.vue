@@ -289,38 +289,45 @@ function onMouseMove(e: MouseEvent) {
     }
   } else if (drag.mode === 'scale' && drag.handle && drag.startShapes[0]) {
     const init = drag.startShapes[0]
-    // 旋转后再缩放比较复杂，这里仅对 rotation===0 的图形做精确缩放，其他情况先降维（保持宽度/高度变换）
-    const dx = p.x - drag.startMouse.x
-    const dy = p.y - drag.startMouse.y
-    let x = init.x
-    let y = init.y
+    const pos = drag.handle
+    const rad = (init.rot * Math.PI) / 180
+    const cos = Math.cos(rad)
+    const sin = Math.sin(rad)
+    // 以图形中心为原点，将起始点与当前点都逆旋转到本地坐标系
+    const cx = init.x + init.w / 2
+    const cy = init.y + init.h / 2
+    const toLocal = (px: number, py: number) => {
+      const gx = px - cx
+      const gy = py - cy
+      return { x: gx * cos + gy * sin, y: -gx * sin + gy * cos }
+    }
+    const v0 = toLocal(drag.startMouse.x, drag.startMouse.y)
+    const v = toLocal(p.x, p.y)
+    // 手柄在本地空间的固定方向符号
+    const sx = pos.includes('r') ? 1 : pos.includes('l') ? -1 : 0
+    const sy = pos.includes('b') ? 1 : pos.includes('t') ? -1 : 0
+    // 对角手柄的本地初始半径（从中心到手柄）
+    const baseX = (sx * init.w) / 2
+    const baseY = (sy * init.h) / 2
     let w = init.w
     let h = init.h
-    const pos = drag.handle
+    if (sx !== 0 && baseX !== 0) {
+      w = Math.max(1, init.w * (v.x / v0.x))
+    }
+    if (sy !== 0 && baseY !== 0) {
+      h = Math.max(1, init.h * (v.y / v0.y))
+    }
     const keepRatio = e.shiftKey || pos === 'br' || pos === 'tl' || pos === 'tr' || pos === 'bl'
-    const ratio = init.w / init.h
-    if (pos.includes('r')) w = Math.max(1, init.w + dx)
-    if (pos.includes('b')) h = Math.max(1, init.h + dy)
-    if (pos.includes('l')) {
-      w = Math.max(1, init.w - dx)
-      x = init.x + (init.w - w)
+    if (keepRatio && (pos === 'tl' || pos === 'tr' || pos === 'bl' || pos === 'br')) {
+      // 对角手柄等比：用本地向量长度比作为统一缩放
+      const len0 = Math.hypot(v0.x, v0.y)
+      const len = Math.hypot(v.x, v.y)
+      const scale = len0 ? len / len0 : 1
+      w = Math.max(1, init.w * scale)
+      h = Math.max(1, init.h * scale)
     }
-    if (pos.includes('t')) {
-      h = Math.max(1, init.h - dy)
-      y = init.y + (init.h - h)
-    }
-    if (keepRatio) {
-      // 取变化较大的那个维度，另一维按比例
-      if (pos === 'tl' || pos === 'tr' || pos === 'bl' || pos === 'br') {
-        if (Math.abs(w - init.w) / Math.max(1, init.w) > Math.abs(h - init.h) / Math.max(1, init.h)) {
-          h = Math.max(1, w / ratio)
-          if (pos.includes('t')) y = init.y + (init.h - h)
-        } else {
-          w = Math.max(1, h * ratio)
-          if (pos.includes('l')) x = init.x + (init.w - w)
-        }
-      }
-    }
+    const x = cx - w / 2
+    const y = cy - h / 2
     editor.updateShape(init.id, { x, y, width: w, height: h })
   } else if (drag.mode === 'rotate' && drag.rotateCenter && drag.startShapes[0]) {
     const init = drag.startShapes[0]
