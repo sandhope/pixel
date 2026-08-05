@@ -188,7 +188,7 @@ const editingInputStyle = computed(() => {
     height: `${s.height}px`,
     transform: `rotate(${s.rotation || 0}deg)`,
     transformOrigin: 'center center',
-    position: 'absolute',
+    position: 'absolute' as const,
     fontSize: `${s.fontSize}px`,
     fontFamily: s.fontFamily,
     fontWeight: weight,
@@ -215,19 +215,39 @@ const canvasWrapperStyle = computed(() => {
 })
 
 // ---------- 缩放手柄定义 ----------
+// 8 个手柄在 0° 时的基础光标方向
+const BASE_CURSORS: Record<string, string> = {
+  tl: 'nwse-resize', tc: 'ns-resize', tr: 'nesw-resize',
+  ml: 'ew-resize', mr: 'ew-resize',
+  bl: 'nesw-resize', bc: 'ns-resize', br: 'nwse-resize',
+}
+// 浏览器只有 4 种 resize 光标，按 90° 步进旋转后的映射
+const ROTATE_MAP: Record<string, string[]> = {
+  'nwse-resize': ['nwse-resize', 'nesw-resize', 'nwse-resize', 'nesw-resize'],
+  'nesw-resize': ['nesw-resize', 'nwse-resize', 'nesw-resize', 'nwse-resize'],
+  'ns-resize':   ['ns-resize', 'ew-resize', 'ns-resize', 'ew-resize'],
+  'ew-resize':   ['ew-resize', 'ns-resize', 'ew-resize', 'ns-resize'],
+}
+
 const scaleHandles = computed(() => {
   if (!box.value) return []
-  const { w, h } = box.value
-  return [
-    { pos: 'tl', x: 0, y: 0, cursor: 'nwse-resize' },
-    { pos: 'tc', x: w / 2, y: 0, cursor: 'ns-resize' },
-    { pos: 'tr', x: w, y: 0, cursor: 'nesw-resize' },
-    { pos: 'ml', x: 0, y: h / 2, cursor: 'ew-resize' },
-    { pos: 'mr', x: w, y: h / 2, cursor: 'ew-resize' },
-    { pos: 'bl', x: 0, y: h, cursor: 'nesw-resize' },
-    { pos: 'bc', x: w / 2, y: h, cursor: 'ns-resize' },
-    { pos: 'br', x: w, y: h, cursor: 'nwse-resize' },
+  const { w, h, rotation } = box.value
+  // 将旋转角度按 90° 就近量化（0/90/180/270）
+  const step = Math.round((((rotation % 360) + 360) % 360) / 90) % 4
+  const positions = [
+    { pos: 'tl', x: 0, y: 0 },
+    { pos: 'tc', x: w / 2, y: 0 },
+    { pos: 'tr', x: w, y: 0 },
+    { pos: 'ml', x: 0, y: h / 2 },
+    { pos: 'mr', x: w, y: h / 2 },
+    { pos: 'bl', x: 0, y: h },
+    { pos: 'bc', x: w / 2, y: h },
+    { pos: 'br', x: w, y: h },
   ]
+  return positions.map(p => ({
+    ...p,
+    cursor: ROTATE_MAP[BASE_CURSORS[p.pos]][step],
+  }))
 })
 
 // ---------- 拖动相关 ----------
