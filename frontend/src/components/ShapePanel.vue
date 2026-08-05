@@ -34,7 +34,6 @@
           :title="t('panel.transparent.tip')"
         >
           <span class="checker-bg"></span>
-          <span class="lbl">{{ t('panel.transparent') }}</span>
         </button>
         <input
           type="color"
@@ -245,17 +244,6 @@ const presets = [
   background-size: 8px 8px;
   background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
   background-color: var(--surface-2);
-}
-.bg-transparent .lbl {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--fg);
-  font-size: 10px;
-  font-weight: 600;
-  mix-blend-mode: difference;
 }
 .bg-picker input[type='color'] {
   width: 28px;
