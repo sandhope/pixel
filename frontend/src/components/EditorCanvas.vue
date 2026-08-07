@@ -872,7 +872,7 @@ watch(
 .canvas-hint {
   position: absolute;
   left: 50%;
-  bottom: 30px;
+  bottom: 60px;
   transform: translateX(-50%);
   color: var(--text-dim);
   font-size: 13px;
@@ -882,6 +882,7 @@ watch(
   border: 1px solid var(--border);
   backdrop-filter: blur(4px);
   pointer-events: none;
+  white-space: nowrap;
 }
 .text-edit-input {
   background: transparent;
