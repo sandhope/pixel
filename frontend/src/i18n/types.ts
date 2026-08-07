@@ -139,6 +139,8 @@ export interface LocaleMessages {
   'msg.openFail': string
   'msg.cancelled': string
   'msg.confirmClear': string
+  'msg.confirmOk': string
+  'msg.confirmCancel': string
   'msg.importFail': string
   'msg.invalidFormat': string
   // backend errors

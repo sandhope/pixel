@@ -139,6 +139,8 @@ const zhCN: LocaleMessages = {
   'msg.openFail': '打开失败：',
   'msg.cancelled': '取消',
   'msg.confirmClear': '确定清空画布吗？此操作可撤销。',
+  'msg.confirmOk': '确定',
+  'msg.confirmCancel': '取消',
   'msg.importFail': '导入失败：',
   'msg.invalidFormat': '格式不正确',
   // backend errors

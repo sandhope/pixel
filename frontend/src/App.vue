@@ -15,6 +15,17 @@
     <AboutDialog v-if="showAbout" @close="showAbout = false" />
     <ShapeLibDialog :visible="showLib" @close="showLib = false" />
     <DrawConfigPopover />
+    <ConfirmDialog
+      :visible="editor.showConfirmDialog"
+      :message="editor.confirmMessage"
+      @confirm="editor.confirmDialogOk()"
+      @cancel="editor.confirmDialogCancel()"
+    />
+    <AlertDialog
+      :visible="editor.showAlertDialog"
+      :message="editor.alertDialogMessage"
+      @close="editor.closeAlertDialog()"
+    />
   </div>
 </template>
 
@@ -29,6 +40,11 @@ import SettingsDialog from '@/components/SettingsDialog.vue'
 import AboutDialog from '@/components/AboutDialog.vue'
 import ShapeLibDialog from '@/components/ShapeLibDialog.vue'
 import DrawConfigPopover from '@/components/DrawConfigPopover.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import AlertDialog from '@/components/AlertDialog.vue'
+import { useEditorStore } from '@/store/editor'
+
+const editor = useEditorStore()
 
 const showSettings = ref(false)
 const showAbout = ref(false)

@@ -40,6 +40,15 @@ export const useEditorStore = defineStore('editor', () => {
   const selectedIds = ref<string[]>([])
   const dirty = ref(false)
 
+  // ----- 确认对话框状态 -----
+  const showConfirmDialog = ref(false)
+  const confirmMessage = ref('')
+  let confirmCallback: (() => void) | null = null
+
+  // ----- 提示对话框状态 -----
+  const showAlertDialog = ref(false)
+  const alertDialogMessage = ref('')
+
   // ----- 工具模式 & 画笔设置 -----
   const toolMode = ref<ToolMode>('select')
   const brush = ref<BrushSettings>({
@@ -230,10 +239,30 @@ export const useEditorStore = defineStore('editor', () => {
     dirty.value = true
   }
   function resetAll() {
-    if (!confirm(t('msg.confirmClear'))) return
-    commit()
-    shapes.value = []
-    selectedIds.value = []
+    confirmMessage.value = t('msg.confirmClear')
+    confirmCallback = () => {
+      commit()
+      shapes.value = []
+      selectedIds.value = []
+    }
+    showConfirmDialog.value = true
+  }
+  function confirmDialogOk() {
+    const cb = confirmCallback
+    showConfirmDialog.value = false
+    confirmCallback = null
+    if (cb) cb()
+  }
+  function confirmDialogCancel() {
+    showConfirmDialog.value = false
+    confirmCallback = null
+  }
+  function showAlert(msg: string) {
+    alertDialogMessage.value = msg
+    showAlertDialog.value = true
+  }
+  function closeAlertDialog() {
+    showAlertDialog.value = false
   }
   // ----- 工具模式 & 画笔 -----
   function setToolMode(mode: ToolMode) {
@@ -333,7 +362,7 @@ export const useEditorStore = defineStore('editor', () => {
       dirty.value = true
       return true
     } catch (e: any) {
-      alert(t('msg.importFail') + (e?.message ?? String(e)))
+      showAlert(t('msg.importFail') + (e?.message ?? String(e)))
       return false
     }
   }
@@ -407,6 +436,10 @@ export const useEditorStore = defineStore('editor', () => {
     dirty,
     toolMode,
     brush,
+    showConfirmDialog,
+    confirmMessage,
+    showAlertDialog,
+    alertDialogMessage,
     // selectors
     selectedShapes,
     activeShape,
@@ -430,6 +463,10 @@ export const useEditorStore = defineStore('editor', () => {
     reorder,
     setCanvas,
     resetAll,
+    confirmDialogOk,
+    confirmDialogCancel,
+    showAlert,
+    closeAlertDialog,
     loadProjectJSON,
     toProjectJSON,
     exportSvgString,

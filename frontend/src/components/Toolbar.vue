@@ -80,7 +80,7 @@ function duplicate() {
 async function exportPng() {
   if (busy.value) return
   if (editor.shapeCount === 0) {
-    alert(t('msg.canvasEmpty'))
+    editor.showAlert(t('msg.canvasEmpty'))
     return
   }
   busy.value = true
@@ -91,7 +91,7 @@ async function exportPng() {
     const result = await callBackend('SavePngDataUrl', dataUrl, base)
     if (result) toast(t('msg.pngExported') + result)
   } catch (e: any) {
-    alert(t('msg.pngExportFail') + (e?.message ?? String(e)))
+    editor.showAlert(t('msg.pngExportFail') + (e?.message ?? String(e)))
   } finally {
     busy.value = false
   }
@@ -100,7 +100,7 @@ async function exportPng() {
 async function exportSvg() {
   if (busy.value) return
   if (editor.shapeCount === 0) {
-    alert(t('msg.canvasEmpty'))
+    editor.showAlert(t('msg.canvasEmpty'))
     return
   }
   busy.value = true
@@ -110,7 +110,7 @@ async function exportSvg() {
     const result = await callBackend('SaveSvg', svg, base)
     if (result) toast(t('msg.svgExported') + result)
   } catch (e: any) {
-    alert(t('msg.svgExportFail') + (e?.message ?? String(e)))
+    editor.showAlert(t('msg.svgExportFail') + (e?.message ?? String(e)))
   } finally {
     busy.value = false
   }
@@ -122,7 +122,7 @@ async function saveProject() {
     const result = await callBackend('SaveProjectJson', json, saveName())
     if (result) toast(t('msg.projectSaved') + result)
   } catch (e: any) {
-    alert(t('msg.projectSaveFail') + (e?.message ?? String(e)))
+    editor.showAlert(t('msg.projectSaveFail') + (e?.message ?? String(e)))
   }
 }
 
@@ -133,7 +133,7 @@ async function openProject() {
     editor.loadProjectJSON(json)
   } catch (e: any) {
     if (String(e).includes(t('msg.cancelled'))) return
-    alert(t('msg.openFail') + (e?.message ?? String(e)))
+    editor.showAlert(t('msg.openFail') + (e?.message ?? String(e)))
   }
 }
 

@@ -139,6 +139,8 @@ const en: LocaleMessages = {
   'msg.openFail': 'Open failed: ',
   'msg.cancelled': 'cancelled',
   'msg.confirmClear': 'Clear the canvas? This can be undone.',
+  'msg.confirmOk': 'OK',
+  'msg.confirmCancel': 'Cancel',
   'msg.importFail': 'Import failed: ',
   'msg.invalidFormat': 'Invalid format',
   // backend errors
