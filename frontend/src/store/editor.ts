@@ -137,6 +137,7 @@ export const useEditorStore = defineStore('editor', () => {
   function addShapeByType(type: ShapeType, x = 100, y = 100) {
     const s = createShape(type, x, y)
     addShape(s)
+    setToolMode('select')
     return s
   }
   function insertShapeAt(type: ShapeType, cx: number, cy: number) {
@@ -145,6 +146,7 @@ export const useEditorStore = defineStore('editor', () => {
     s.x = cx - s.width / 2
     s.y = cy - s.height / 2
     addShape(s)
+    setToolMode('select')
     return s
   }
   function updateShape(id: string, patch: Partial<Shape>) {
@@ -257,6 +259,7 @@ export const useEditorStore = defineStore('editor', () => {
     const { d, sourceSize, name, x = 100 + Math.random() * 80, y = 100 + Math.random() * 80, width = 120, height = 120 } = params
     const s = createPathFromD(d, { sourceSize, name, x, y, width, height })
     addShape(s)
+    setToolMode('select')
     return s
   }
   /**
@@ -279,6 +282,7 @@ export const useEditorStore = defineStore('editor', () => {
       fill: 'none',
       stroke: brush.value.color,
       strokeWidth: brush.value.width,
+      source: 'brush',
     })
     s.opacity = brush.value.opacity
     addShape(s)
@@ -293,7 +297,7 @@ export const useEditorStore = defineStore('editor', () => {
   function addFreeformPath(
     pathD: string,
     bbox: { x: number; y: number; w: number; h: number },
-    opts: { name: string; fill?: string; stroke?: string; strokeWidth?: number },
+    opts: { name: string; fill?: string; stroke?: string; strokeWidth?: number; source?: 'polygon' | 'curve' },
   ) {
     const w = Math.max(1, bbox.w)
     const h = Math.max(1, bbox.h)
@@ -308,6 +312,7 @@ export const useEditorStore = defineStore('editor', () => {
       fill: opts.fill ?? 'none',
       stroke: opts.stroke ?? brush.value.color,
       strokeWidth: opts.strokeWidth ?? brush.value.width,
+      source: opts.source,
     })
     s.opacity = brush.value.opacity
     addShape(s)

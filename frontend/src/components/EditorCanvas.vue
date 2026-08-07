@@ -622,6 +622,7 @@ function polyFinish(closed: boolean) {
     fill: mode === 'polygon' ? editor.brush.color : 'none',
     stroke: editor.brush.color,
     strokeWidth: editor.brush.width,
+    source: mode === 'polygon' ? 'polygon' : 'curve',
   })
 }
 

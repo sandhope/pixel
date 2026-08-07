@@ -471,6 +471,16 @@ function thumbSvg(shape: Shape): string {
     case 'star':
       return `<polygon points="12,2 14.5,8.5 21,9.5 16.5,14 17.5,21 12,17.5 6.5,21 7.5,14 3,9.5 9.5,8.5" fill="${c}"/>`
     case 'path':
+      // 绘制工具产生的 path 使用与左侧面板一致的图标；基础图形 path 仍用心形
+      if (shape.source === 'brush') {
+        return `<path d="M12 19l7-7 3 3-7 7-3-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 2l7.586 7.586" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="2" fill="none" stroke="currentColor" stroke-width="2"/>`
+      }
+      if (shape.source === 'polygon') {
+        return `<path d="M12 2l9 6.5v9L12 22 3 17.5v-9L12 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`
+      }
+      if (shape.source === 'curve') {
+        return `<path d="M3 18C7 18 7 6 12 6s5 12 9 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3" cy="18" r="1.6" fill="currentColor"/><circle cx="21" cy="18" r="1.6" fill="currentColor"/>`
+      }
       return `<path d="M12 20 C3 14 2 8 6 4 C9 1 11 3 12 7 C13 3 15 1 18 4 C22 8 21 14 12 20 Z" fill="${c}"/>`
     case 'text':
       return `<text x="12" y="14" dominant-baseline="middle" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="${c}">Aa</text>`

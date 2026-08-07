@@ -24,6 +24,7 @@ const en: LocaleMessages = {
   'toolbar.processing': 'Processing…',
   'toolbar.settings': '⚙ Settings',
   // shape panel
+  'panel.drawTools': 'Draw Tools',
   'panel.shapes': 'Basic Shapes',
   'panel.shapeLibrary': 'Shape Library',
   'panel.shapeLibrary.desc': '13 categories, hundreds of shapes',

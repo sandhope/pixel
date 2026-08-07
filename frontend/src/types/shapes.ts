@@ -75,6 +75,8 @@ export interface PathShape extends BaseShape {
   type: 'path'
   /** 绝对路径字符串，使用 viewBox 坐标系下，0,0 为原点。渲染时会被 translate(x,y) */
   d: string
+  /** 标记该 path 由哪个绘制工具产生，用于图层缩略图区分图标 */
+  source?: 'brush' | 'polygon' | 'curve'
 }
 
 export type Shape =

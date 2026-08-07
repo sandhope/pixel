@@ -24,6 +24,7 @@ export interface LocaleMessages {
   'toolbar.processing': string
   'toolbar.settings': string
   // shape panel
+  'panel.drawTools': string
   'panel.shapes': string
   'panel.shapeLibrary': string
   'panel.shapeLibrary.desc': string

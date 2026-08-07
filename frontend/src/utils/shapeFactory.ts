@@ -164,6 +164,7 @@ export function createPathFromD(
     stroke?: string
     strokeWidth?: number
     name?: string
+    source?: 'brush' | 'polygon' | 'curve'
   } = {},
 ): PathShape {
   const {
@@ -176,6 +177,7 @@ export function createPathFromD(
     stroke = 'none',
     strokeWidth = 0,
     name = t('shape.path'),
+    source,
   } = opts
 
   // 归一化：把源坐标 (0..sourceSize) 内的 path 转换到 (0..100) 空间
@@ -197,6 +199,7 @@ export function createPathFromD(
     visible: true,
     locked: false,
     d: scaled,
+    source,
   }
 }
 

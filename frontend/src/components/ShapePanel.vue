@@ -1,7 +1,50 @@
 <template>
   <div class="shape-panel">
+    <!-- 绘制工具 -->
+    <div class="panel-title">{{ t('panel.drawTools') }}</div>
+    <div class="draw-tools">
+      <button
+        class="draw-btn"
+        :class="{ active: editor.toolMode === 'brush' }"
+        @click="editor.setToolMode('brush')"
+        :title="t('toolbar.tool.brush.tip')"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+          <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+          <path d="M2 2l7.586 7.586"></path>
+          <circle cx="11" cy="11" r="2"></circle>
+        </svg>
+        <span>{{ t('toolbar.tool.brush') }}</span>
+      </button>
+      <button
+        class="draw-btn"
+        :class="{ active: editor.toolMode === 'polygon' }"
+        @click="editor.setToolMode('polygon')"
+        :title="t('toolbar.tool.polygon.tip')"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l9 6.5v9L12 22 3 17.5v-9L12 2z"></path>
+        </svg>
+        <span>{{ t('toolbar.tool.polygon') }}</span>
+      </button>
+      <button
+        class="draw-btn"
+        :class="{ active: editor.toolMode === 'curve' }"
+        @click="editor.setToolMode('curve')"
+        :title="t('toolbar.tool.curve.tip')"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 18C7 18 7 6 12 6s5 12 9 12"></path>
+          <circle cx="3" cy="18" r="1.6" fill="currentColor"></circle>
+          <circle cx="21" cy="18" r="1.6" fill="currentColor"></circle>
+        </svg>
+        <span>{{ t('toolbar.tool.curve') }}</span>
+      </button>
+    </div>
+
     <!-- 基础图形 -->
-    <div class="panel-title">{{ t('panel.shapes') }}</div>
+    <div class="panel-title" style="margin-top: 18px">{{ t('panel.shapes') }}</div>
     <div class="shape-grid">
       <div
         v-for="item in items"
@@ -172,6 +215,39 @@ const presets = [
   padding: 14px 14px 20px;
   overflow-y: auto;
 }
+
+/* 绘制工具 */
+.draw-tools {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.draw-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+.draw-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-glow);
+  color: var(--fg);
+  transform: translateY(-1px);
+}
+.draw-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
 .panel-title {
   font-size: 12px;
   letter-spacing: 1px;

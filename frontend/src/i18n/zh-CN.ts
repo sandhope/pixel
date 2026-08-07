@@ -24,6 +24,7 @@ const zhCN: LocaleMessages = {
   'toolbar.processing': '处理中…',
   'toolbar.settings': '⚙ 设置',
   // shape panel
+  'panel.drawTools': '绘制工具',
   'panel.shapes': '基础图形',
   'panel.shapeLibrary': '分类图形库',
   'panel.shapeLibrary.desc': '13 类数百种图形，点击添加',

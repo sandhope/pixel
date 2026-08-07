@@ -14,6 +14,7 @@
     <SettingsDialog :visible="showSettings" @close="showSettings = false" />
     <AboutDialog v-if="showAbout" @close="showAbout = false" />
     <ShapeLibDialog :visible="showLib" @close="showLib = false" />
+    <DrawConfigPopover />
   </div>
 </template>
 
@@ -27,6 +28,7 @@ import RightPanel from '@/components/RightPanel.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
 import AboutDialog from '@/components/AboutDialog.vue'
 import ShapeLibDialog from '@/components/ShapeLibDialog.vue'
+import DrawConfigPopover from '@/components/DrawConfigPopover.vue'
 
 const showSettings = ref(false)
 const showAbout = ref(false)
