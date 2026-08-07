@@ -1,4 +1,4 @@
-import type { Shape } from '@/types/shapes'
+import type { Shape, GradientFill } from '@/types/shapes'
 
 /**
  * 把单个形状 -> 对应的 SVG 内部元素（不包含 translate/rotate，那层包裹）
@@ -83,7 +83,11 @@ export function shapeInnerSvg(s: Shape): string {
 
 export function commonAttrs(s: Shape): string {
   const parts: string[] = []
-  if (s.fill) parts.push(`fill="${s.fill === 'none' ? 'none' : escapeXml(s.fill)}"`)
+  if (s.fillGradient) {
+    parts.push(`fill="url(#grad-${s.id})"`)
+  } else if (s.fill) {
+    parts.push(`fill="${s.fill === 'none' ? 'none' : escapeXml(s.fill)}"`)
+  }
   if (s.stroke) parts.push(`stroke="${s.stroke === 'none' ? 'none' : escapeXml(s.stroke)}"`)
   if (s.strokeWidth > 0) parts.push(`stroke-width="${fmt(s.strokeWidth)}"`)
   if (s.opacity < 1) parts.push(`opacity="${fmtNumber(s.opacity)}"`)
@@ -105,4 +109,53 @@ export function escapeXml(str: string): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&apos;')
+}
+
+// ---------- 渐变定义生成 ----------
+
+/** 角度转 0-1 坐标系下的线性渐变端点 (objectBoundingBox) */
+function angleToPoints(angle: number): { x1: string; y1: string; x2: string; y2: string } {
+  const rad = (angle * Math.PI) / 180
+  const cos = Math.cos(rad)
+  const sin = Math.sin(rad)
+  return {
+    x1: fmtNumber(0.5 - cos / 2),
+    y1: fmtNumber(0.5 - sin / 2),
+    x2: fmtNumber(0.5 + cos / 2),
+    y2: fmtNumber(0.5 + sin / 2),
+  }
+}
+
+/** 为单个形状生成渐变 <defs> 元素字符串 */
+export function gradientDef(s: Shape): string {
+  const g = s.fillGradient
+  if (!g || g.stops.length < 2) return ''
+  const id = `grad-${s.id}`
+  const stopsSvg = g.stops
+    .map((stop) => {
+      const op = stop.opacity != null && stop.opacity < 1 ? ` stop-opacity="${fmtNumber(stop.opacity)}"` : ''
+      return `  <stop offset="${fmtNumber(Math.max(0, Math.min(1, stop.offset)))}" stop-color="${escapeXml(stop.color)}"${op}/>`
+    })
+    .join('\n')
+
+  if (g.type === 'radial') {
+    return (
+      `<radialGradient id="${id}" cx="0.5" cy="0.5" r="0.5">\n` +
+      stopsSvg +
+      `\n</radialGradient>`
+    )
+  }
+  const { x1, y1, x2, y2 } = angleToPoints(g.angle ?? 0)
+  return (
+    `<linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">\n` +
+    stopsSvg +
+    `\n</linearGradient>`
+  )
+}
+
+/** 收集所有可见形状的渐变定义，生成 <defs> 块 */
+export function collectGradientDefs(shapes: Shape[]): string {
+  const defs = shapes.filter((s) => s.visible && s.fillGradient).map((s) => gradientDef(s)).filter(Boolean)
+  if (defs.length === 0) return ''
+  return `<defs>\n${defs.join('\n')}\n</defs>`
 }

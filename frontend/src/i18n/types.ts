@@ -171,4 +171,12 @@ export interface LocaleMessages {
   'titlebar.minimize': string
   'titlebar.maximize': string
   'titlebar.close': string
+  // gradient
+  'prop.gradient': string
+  'gradient.none': string
+  'gradient.linear': string
+  'gradient.radial': string
+  'gradient.angle': string
+  'gradient.addStop': string
+  'gradient.stops': string
 }

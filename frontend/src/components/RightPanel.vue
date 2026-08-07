@@ -307,6 +307,75 @@
             />
           </div>
         </div>
+
+        <!-- 渐变填充 -->
+        <div class="field-row">
+          <label>{{ t('prop.gradient') }}</label>
+          <div class="seg grad-seg">
+            <button
+              :class="{ on: !s!.fillGradient }"
+              @click="setGradientType('none')"
+            >{{ t('gradient.none') }}</button>
+            <button
+              :class="{ on: s!.fillGradient?.type === 'linear' }"
+              @click="setGradientType('linear')"
+            >{{ t('gradient.linear') }}</button>
+            <button
+              :class="{ on: s!.fillGradient?.type === 'radial' }"
+              @click="setGradientType('radial')"
+            >{{ t('gradient.radial') }}</button>
+          </div>
+        </div>
+        <template v-if="s!.fillGradient">
+          <div class="field-row" v-if="s!.fillGradient.type === 'linear'">
+            <label>{{ t('gradient.angle') }}</label>
+            <input
+              type="range"
+              min="0"
+              max="360"
+              step="1"
+              :value="s!.fillGradient.angle"
+              @input="updateGradientAngle(numVal($event))"
+              class="grad-angle-slider"
+            />
+            <span class="grad-angle-val">{{ Math.round(s!.fillGradient.angle) }}°</span>
+          </div>
+          <div class="grad-stops">
+            <div
+              v-for="(stop, i) in s!.fillGradient.stops"
+              :key="i"
+              class="grad-stop-row"
+            >
+              <input
+                type="color"
+                :value="stop.color"
+                @input="updateStop(i, { color: val($event) })"
+                class="grad-stop-color"
+              />
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                :value="Math.round(stop.offset * 100)"
+                @input="updateStop(i, { offset: numVal($event) / 100 })"
+                class="grad-stop-offset"
+              />
+              <button
+                v-if="s!.fillGradient!.stops.length > 2"
+                class="grad-stop-del"
+                @click="removeStop(i)"
+                title="×"
+              >×</button>
+            </div>
+            <button
+              v-if="s!.fillGradient.stops.length < 6"
+              class="grad-add-stop"
+              @click="addStop()"
+            >{{ t('gradient.addStop') }}</button>
+          </div>
+        </template>
+
         <div class="field-row">
           <label>{{ t('prop.stroke') }}</label>
           <div class="color-pick">
@@ -346,7 +415,7 @@
 import { computed } from 'vue'
 import { useEditorStore } from '@/store/editor'
 import { t, locale } from '@/i18n'
-import type { Shape } from '@/types/shapes'
+import type { Shape, GradientFill, GradientStop } from '@/types/shapes'
 
 const editor = useEditorStore()
 const s = computed(() => editor.activeShape)
@@ -430,6 +499,126 @@ function upd(patch: Partial<Shape>) {
 function updAny(patch: Record<string, any>) {
   editor.updateActive(patch as any)
 }
+// ---------- 渐变操作 ----------
+function setGradientType(type: 'none' | 'linear' | 'radial') {
+  const shape = s.value
+  if (!shape) return
+  if (type === 'none') {
+    upd({ fillGradient: undefined })
+    return
+  }
+  // 从当前 fill 色和补色创建默认 2 色标渐变
+  const baseColor = shape.fill && shape.fill !== 'none' ? shape.fill : '#6366f1'
+  const endColor = shiftHue(baseColor, 60)
+  const grad: GradientFill = {
+    type,
+    stops: [
+      { offset: 0, color: baseColor },
+      { offset: 1, color: endColor },
+    ],
+    angle: 90,
+  }
+  upd({ fillGradient: grad })
+}
+function updateGradientAngle(angle: number) {
+  const shape = s.value
+  if (!shape?.fillGradient) return
+  upd({ fillGradient: { ...shape.fillGradient, angle } })
+}
+function updateStop(index: number, patch: Partial<GradientStop>) {
+  const shape = s.value
+  if (!shape?.fillGradient) return
+  const stops = shape.fillGradient.stops.map((st, i) =>
+    i === index ? { ...st, ...patch } : st,
+  )
+  upd({ fillGradient: { ...shape.fillGradient, stops } })
+}
+function addStop() {
+  const shape = s.value
+  if (!shape?.fillGradient) return
+  const stops = [...shape.fillGradient.stops]
+  if (stops.length >= 6) return
+  // 在最后一个色标前插入，offset 取中间值
+  const lastIdx = stops.length - 1
+  const midOffset = (stops[lastIdx - 1].offset + stops[lastIdx].offset) / 2
+  const midColor = blendHex(stops[lastIdx - 1].color, stops[lastIdx].color)
+  stops.splice(lastIdx, 0, { offset: midOffset, color: midColor })
+  upd({ fillGradient: { ...shape.fillGradient, stops } })
+}
+function removeStop(index: number) {
+  const shape = s.value
+  if (!shape?.fillGradient || shape.fillGradient.stops.length <= 2) return
+  const stops = shape.fillGradient.stops.filter((_, i) => i !== index)
+  upd({ fillGradient: { ...shape.fillGradient, stops } })
+}
+/** hex 色相偏移 */
+function shiftHue(hex: string, deg: number): string {
+  const { r, g, b } = hexToRgb(hex)
+  let { h, s, l } = rgbToHsl(r, g, b)
+  h = (h + deg / 360) % 1
+  if (h < 0) h += 1
+  const { r: nr, g: ng, b: nb } = hslToRgb(h, s, l)
+  return rgbToHex(nr, ng, nb)
+}
+/** hex 颜色混合 */
+function blendHex(a: string, b: string): string {
+  const ra = hexToRgb(a), rb = hexToRgb(b)
+  return rgbToHex(
+    Math.round((ra.r + rb.r) / 2),
+    Math.round((ra.g + rb.g) / 2),
+    Math.round((ra.b + rb.b) / 2),
+  )
+}
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const m = hex.replace('#', '')
+  const full = m.length === 3 ? m.split('').map((c) => c + c).join('') : m
+  return {
+    r: parseInt(full.slice(0, 2), 16) || 0,
+    g: parseInt(full.slice(2, 4), 16) || 0,
+    b: parseInt(full.slice(4, 6), 16) || 0,
+  }
+}
+function rgbToHex(r: number, g: number, b: number): string {
+  return '#' + [r, g, b].map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('')
+}
+function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number } {
+  r /= 255; g /= 255; b /= 255
+  const max = Math.max(r, g, b), min = Math.min(r, g, b)
+  let h = 0, s = 0
+  const l = (max + min) / 2
+  if (max !== min) {
+    const d = max - min
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break
+      case g: h = (b - r) / d + 2; break
+      case b: h = (r - g) / d + 4; break
+    }
+    h /= 6
+  }
+  return { h, s, l }
+}
+function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
+  let r: number, g: number, b: number
+  if (s === 0) {
+    r = g = b = l
+  } else {
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1
+      if (t > 1) t -= 1
+      if (t < 1 / 6) return p + (q - p) * 6 * t
+      if (t < 1 / 2) return q
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+      return p
+    }
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+    const p = 2 * l - q
+    r = hue2rgb(p, q, h + 1 / 3)
+    g = hue2rgb(p, q, h)
+    b = hue2rgb(p, q, h - 1 / 3)
+  }
+  return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) }
+}
 function val(e: Event) {
   return (e.target as HTMLInputElement).value
 }
@@ -454,7 +643,11 @@ function parseWeight(v: string): number | 'normal' | 'bold' {
   return v as any
 }
 function thumbSvg(shape: Shape): string {
-  const c = shape.fill === 'none' ? 'currentColor' : shape.fill
+  const c = shape.fillGradient
+    ? (shape.fillGradient.stops[0]?.color ?? shape.fill)
+    : shape.fill === 'none'
+      ? 'currentColor'
+      : shape.fill
   switch (shape.type) {
     case 'rect':
       return `<rect x="4" y="6" width="16" height="12" rx="2" fill="${c}"/>`
@@ -752,5 +945,89 @@ function thumbSvg(shape: Shape): string {
 .seg button.on {
   background: var(--primary);
   color: #fff;
+}
+
+/* 渐变编辑器 */
+.grad-seg {
+  flex: 1;
+}
+.grad-seg button {
+  font-size: 11px;
+  padding: 5px 0;
+}
+.grad-angle-slider {
+  flex: 1;
+  accent-color: var(--primary);
+  height: 4px;
+}
+.grad-angle-val {
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 32px;
+  text-align: right;
+}
+.grad-stops {
+  margin-bottom: 10px;
+  padding: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.grad-stop-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.grad-stop-row:last-child {
+  margin-bottom: 0;
+}
+.grad-stop-color {
+  width: 28px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: transparent;
+}
+.grad-stop-offset {
+  flex: 1;
+  accent-color: var(--primary);
+  height: 4px;
+  min-width: 0;
+}
+.grad-stop-del {
+  width: 22px;
+  height: 24px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0;
+}
+.grad-stop-del:hover {
+  color: #f87171;
+  border-color: #f87171;
+}
+.grad-add-stop {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  border-radius: 6px;
+  padding: 5px 0;
+  font-size: 11px;
+  cursor: pointer;
+  margin-top: 6px;
+}
+.grad-add-stop:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }
 </style>

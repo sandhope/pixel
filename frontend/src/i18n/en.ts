@@ -171,6 +171,14 @@ const en: LocaleMessages = {
   'titlebar.minimize': 'Minimize',
   'titlebar.maximize': 'Maximize / Restore',
   'titlebar.close': 'Close',
+  // gradient
+  'prop.gradient': 'Gradient',
+  'gradient.none': 'None',
+  'gradient.linear': 'Linear',
+  'gradient.radial': 'Radial',
+  'gradient.angle': 'Angle',
+  'gradient.addStop': '+ Add stop',
+  'gradient.stops': 'Stops',
 }
 
 export default en

@@ -193,6 +193,10 @@ export const useEditorStore = defineStore('editor', () => {
       const copy: Shape = { ...src, x: src.x + 20, y: src.y + 20 } as Shape
       // 重新生成 id 以避免冲突
       copy.id = nanoid(10)
+      // 深拷贝渐变定义，避免共享引用
+      if (src.fillGradient) {
+        copy.fillGradient = JSON.parse(JSON.stringify(src.fillGradient))
+      }
       shapes.value.push(copy)
       newIds.push(copy.id)
     }

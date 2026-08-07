@@ -36,6 +36,8 @@
         @mousedown="onSvgMouseDown"
         @dblclick="onSvgDblClick"
       >
+        <!-- 渐变定义 -->
+        <defs v-html="gradientDefsHtml"></defs>
         <!-- 每个 shape 一个 group（可点击） -->
         <g
           v-for="s in editor.shapes"
@@ -210,7 +212,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useEditorStore } from '@/store/editor'
 import type { Shape, ShapeType } from '@/types/shapes'
-import { shapeInnerSvg as renderInner } from '@/utils/svgRender'
+import { shapeInnerSvg as renderInner, collectGradientDefs } from '@/utils/svgRender'
 import { t } from '@/i18n'
 
 const editor = useEditorStore()
@@ -359,6 +361,9 @@ function shapeTransform(s: Shape): string {
 function shapeInnerSvg(s: Shape): string {
   return renderInner(s)
 }
+
+// 渐变 defs（响应式，随 shapes 变化更新）
+const gradientDefsHtml = computed(() => collectGradientDefs(editor.shapes))
 
 // 画布 wrapper 尺寸：固定，外层做 auto fit
 const canvasWrapperStyle = computed(() => {

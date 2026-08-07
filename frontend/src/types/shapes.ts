@@ -1,5 +1,20 @@
 // ---------- 图形类型与数据模型 ----------
 
+/** 渐变停止点 */
+export interface GradientStop {
+  offset: number // 0-1
+  color: string // hex 颜色，如 '#ff0000'
+  opacity?: number // 0-1，默认 1
+}
+
+/** 渐变填充定义 */
+export interface GradientFill {
+  type: 'linear' | 'radial'
+  stops: GradientStop[]
+  /** 线性渐变角度（度），0=从左到右，90=从上到下 */
+  angle: number
+}
+
 export type ShapeType =
   | 'rect'
   | 'circle'
@@ -20,7 +35,9 @@ export interface BaseShape {
   width: number
   height: number
   rotation: number // 角度 0-360
-  fill: string // 填充色，'none' 表示不填充
+  fill: string // 填充色，'none' 表示不填充；渐变时存 url(#grad-id) 由渲染层处理
+  /** 渐变填充定义，存在时渲染使用 url(#grad-{id}) */
+  fillGradient?: GradientFill
   stroke: string // 描边色，'none' 表示不描边
   strokeWidth: number
   opacity: number // 0-1

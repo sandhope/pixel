@@ -171,6 +171,14 @@ const zhCN: LocaleMessages = {
   'titlebar.minimize': '最小化',
   'titlebar.maximize': '最大化 / 还原',
   'titlebar.close': '关闭',
+  // gradient
+  'prop.gradient': '渐变',
+  'gradient.none': '无',
+  'gradient.linear': '线性',
+  'gradient.radial': '径向',
+  'gradient.angle': '角度',
+  'gradient.addStop': '+ 添加色标',
+  'gradient.stops': '色标',
 }
 
 export default zhCN
