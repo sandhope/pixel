@@ -50,11 +50,17 @@ export interface LocaleMessages {
   'shape.brush': string
   'shape.text': string
   'shape.default': string
+  'shape.polygonDraw': string
+  'shape.curve': string
   // toolbar tools & brush
   'toolbar.tool.select': string
   'toolbar.tool.select.tip': string
   'toolbar.tool.brush': string
   'toolbar.tool.brush.tip': string
+  'toolbar.tool.polygon': string
+  'toolbar.tool.polygon.tip': string
+  'toolbar.tool.curve': string
+  'toolbar.tool.curve.tip': string
   'toolbar.brush.color': string
   'toolbar.brush.color.tip': string
   'toolbar.brush.width': string
@@ -63,6 +69,11 @@ export interface LocaleMessages {
   'toolbar.brush.opacity.tip': string
   // editor canvas
   'canvas.empty.hint': string
+  'canvas.poly.hint.idle': string
+  'canvas.poly.hint.drawing': string
+  'canvas.poly.hint.canClose': string
+  'canvas.curve.hint.idle': string
+  'canvas.curve.hint.drawing': string
   // right panel
   'panel.layers': string
   'panel.align': string

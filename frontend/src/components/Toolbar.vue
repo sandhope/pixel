@@ -27,6 +27,30 @@
         </svg>
         {{ t('toolbar.tool.brush') }}
       </button>
+      <button
+        class="tb tool-btn"
+        :class="{ active: editor.toolMode === 'polygon' }"
+        @click="editor.setToolMode('polygon')"
+        :title="t('toolbar.tool.polygon.tip')"
+      >
+        <svg class="tb-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l9 6.5v9L12 22 3 17.5v-9L12 2z"></path>
+        </svg>
+        {{ t('toolbar.tool.polygon') }}
+      </button>
+      <button
+        class="tb tool-btn"
+        :class="{ active: editor.toolMode === 'curve' }"
+        @click="editor.setToolMode('curve')"
+        :title="t('toolbar.tool.curve.tip')"
+      >
+        <svg class="tb-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 18C7 18 7 6 12 6s5 12 9 12"></path>
+          <circle cx="3" cy="18" r="1.6" fill="currentColor"></circle>
+          <circle cx="21" cy="18" r="1.6" fill="currentColor"></circle>
+        </svg>
+        {{ t('toolbar.tool.curve') }}
+      </button>
       <span class="sep"></span>
 
       <button class="tb" @click="undo" :disabled="!editor.canUndo" :title="t('toolbar.undo.tip')">{{ t('toolbar.undo') }}</button>
@@ -68,9 +92,9 @@
       <span v-if="busy" class="busy">{{ t('toolbar.processing') }}</span>
     </div>
 
-    <!-- 画笔设置浮动面板 -->
+    <!-- 画笔设置浮动面板（画笔 / 多边形 / 曲线 共用颜色、粗细、透明度） -->
     <Transition name="brush-pop">
-      <div v-if="editor.toolMode === 'brush'" class="brush-popover">
+      <div v-if="editor.toolMode === 'brush' || editor.toolMode === 'polygon' || editor.toolMode === 'curve'" class="brush-popover">
         <div class="brush-field" :title="t('toolbar.brush.color.tip')">
           <span class="brush-label">{{ t('toolbar.brush.color') }}</span>
           <input type="color" :value="editor.brush.color" @input="onBrushColor" class="brush-color" />

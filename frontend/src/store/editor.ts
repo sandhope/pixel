@@ -6,7 +6,7 @@ import { createShape, createPathFromD } from '@/utils/shapeFactory'
 import { buildExportSvg } from '@/utils/exportSvg'
 import { t } from '@/i18n'
 
-export type ToolMode = 'select' | 'brush'
+export type ToolMode = 'select' | 'brush' | 'polygon' | 'curve'
 
 export interface BrushSettings {
   color: string
@@ -284,6 +284,35 @@ export const useEditorStore = defineStore('editor', () => {
     addShape(s)
     return s
   }
+  /**
+   * 添加多边形/曲线工具绘制的 path（可填充可描边）
+   * @param pathD SVG path d（世界坐标下，已包含 Z 或平滑曲线命令）
+   * @param bbox 包围盒 {x,y,w,h} 世界坐标
+   * @param opts 名称、填充、描边等
+   */
+  function addFreeformPath(
+    pathD: string,
+    bbox: { x: number; y: number; w: number; h: number },
+    opts: { name: string; fill?: string; stroke?: string; strokeWidth?: number },
+  ) {
+    const w = Math.max(1, bbox.w)
+    const h = Math.max(1, bbox.h)
+    const localD = shiftAndScalePathD(pathD, -bbox.x, -bbox.y, 100 / w, 100 / h)
+    const s = createPathFromD(localD, {
+      sourceSize: 100,
+      name: opts.name,
+      x: bbox.x,
+      y: bbox.y,
+      width: w,
+      height: h,
+      fill: opts.fill ?? 'none',
+      stroke: opts.stroke ?? brush.value.color,
+      strokeWidth: opts.strokeWidth ?? brush.value.width,
+    })
+    s.opacity = brush.value.opacity
+    addShape(s)
+    return s
+  }
   function loadProjectJSON(json: string) {
     try {
       const p = JSON.parse(json) as ProjectState
@@ -403,5 +432,6 @@ export const useEditorStore = defineStore('editor', () => {
     setBrush,
     addLibraryShape,
     addBrushPath,
+    addFreeformPath,
   }
 })

@@ -26,11 +26,15 @@
       <svg
         ref="svgEl"
         class="canvas-svg"
-        :class="{ 'cursor-brush': editor.toolMode === 'brush' }"
+        :class="{
+          'cursor-brush': editor.toolMode === 'brush',
+          'cursor-poly': editor.toolMode === 'polygon' || editor.toolMode === 'curve',
+        }"
         :width="editor.canvas.width"
         :height="editor.canvas.height"
         :viewBox="`0 0 ${editor.canvas.width} ${editor.canvas.height}`"
         @mousedown="onSvgMouseDown"
+        @dblclick="onSvgDblClick"
       >
         <!-- 每个 shape 一个 group（可点击） -->
         <g
@@ -76,6 +80,34 @@
           vector-effect="non-scaling-stroke"
           pointer-events="none"
         />
+
+        <!-- 多边形 / 曲线绘制预览 -->
+        <template v-if="polyPoints.length > 0">
+          <path
+            :d="polyPreviewD()"
+            :fill="editor.toolMode === 'polygon' ? editor.brush.color : 'none'"
+            :fill-opacity="editor.toolMode === 'polygon' ? 0.25 : 0"
+            :stroke="editor.brush.color"
+            :stroke-width="editor.brush.width"
+            :stroke-opacity="editor.brush.opacity"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            vector-effect="non-scaling-stroke"
+            pointer-events="none"
+          />
+          <!-- 已点击的顶点圆圈；第一个点高亮提示可点击闭合 -->
+          <circle
+            v-for="(p, i) in polyPoints"
+            :key="'pv' + i"
+            :cx="p.x"
+            :cy="p.y"
+            :r="i === 0 && editor.toolMode === 'polygon' && polyPoints.length >= 3 ? 5 : 3.5"
+            :fill="i === 0 && editor.toolMode === 'polygon' && polyPoints.length >= 3 ? '#22c55e' : '#ffffff'"
+            stroke="#6366f1"
+            stroke-width="1.5"
+            pointer-events="none"
+          />
+        </template>
 
         <!-- 选中外框 & 操作手柄 -->
         <template v-if="box != null && editor.toolMode === 'select'">
@@ -148,6 +180,11 @@
 
     <div class="canvas-hint" v-if="editor.shapes.length === 0">
       {{ t('canvas.empty.hint') }}
+    </div>
+
+    <!-- 多边形 / 曲线 绘制中的操作提示 -->
+    <div class="draw-hint" v-if="drawHint">
+      {{ drawHint }}
     </div>
 
     <!-- 底部调色板 -->
@@ -465,17 +502,189 @@ function brushEnd() {
   editor.addBrushPath(d, bbox)
 }
 
+// ---------- 多边形 / 曲线绘制事件（点击式）----------
+const polyPoints = ref<{ x: number; y: number }[]>([])
+const polyCursor = ref<{ x: number; y: number } | null>(null)
+const CLOSE_TOL = 8 // 点击起点闭合容差（SVG 单位）
+const DUP_TOL = 3 // 重复点容差，避免双击产生的重复点
+
+function clampToCanvas(p: { x: number; y: number }) {
+  if (p.x < 0) p.x = 0
+  if (p.y < 0) p.y = 0
+  if (p.x > editor.canvas.width) p.x = editor.canvas.width
+  if (p.y > editor.canvas.height) p.y = editor.canvas.height
+}
+
+function polyPreviewD(): string {
+  const pts = polyPoints.value
+  if (pts.length === 0) return ''
+  const mode = editor.toolMode
+  const cursor = polyCursor.value
+  const withCursor = cursor ? [...pts, cursor] : pts
+  if (mode === 'curve') {
+    return smoothPolylineToBezier(withCursor)
+  }
+  // polygon: 直线段 + 橡皮筋
+  let d = `M ${pts[0].x} ${pts[0].y}`
+  for (let i = 1; i < pts.length; i++) d += ` L ${pts[i].x} ${pts[i].y}`
+  if (cursor) d += ` L ${cursor.x} ${cursor.y}`
+  return d
+}
+
+// 绘制中的操作提示
+const drawHint = computed(() => {
+  const mode = editor.toolMode
+  if (mode !== 'polygon' && mode !== 'curve') return ''
+  const n = polyPoints.value.length
+  if (mode === 'polygon') {
+    if (n === 0) return t('canvas.poly.hint.idle')
+    if (n >= 3) return t('canvas.poly.hint.canClose', { n })
+    return t('canvas.poly.hint.drawing', { n })
+  }
+  // curve
+  if (n === 0) return t('canvas.curve.hint.idle')
+  return t('canvas.curve.hint.drawing', { n })
+})
+
+function polyStart(e: MouseEvent) {
+  const mode = editor.toolMode
+  if (mode !== 'polygon' && mode !== 'curve') return
+  const p = svgPointFromEvent(e)
+  clampToCanvas(p)
+  editor.commit()
+  polyPoints.value = [{ x: p.x, y: p.y }]
+  polyCursor.value = { x: p.x, y: p.y }
+  document.body.style.cursor = 'crosshair'
+  window.addEventListener('mousemove', polyMove)
+  e.preventDefault()
+}
+
+function polyClick(e: MouseEvent) {
+  const mode = editor.toolMode
+  if (mode !== 'polygon' && mode !== 'curve') return
+  const p = svgPointFromEvent(e)
+  clampToCanvas(p)
+  const pts = polyPoints.value
+  if (pts.length === 0) {
+    polyStart(e)
+    return
+  }
+  // 多边形：点击起点闭合
+  if (mode === 'polygon' && pts.length >= 3) {
+    const first = pts[0]
+    if (Math.hypot(p.x - first.x, p.y - first.y) <= CLOSE_TOL) {
+      polyFinish(true)
+      return
+    }
+  }
+  // 去重：避免双击或误触产生的重复点
+  const last = pts[pts.length - 1]
+  if (Math.hypot(p.x - last.x, p.y - last.y) < DUP_TOL) return
+  pts.push({ x: p.x, y: p.y })
+}
+
+function polyMove(e: MouseEvent) {
+  const mode = editor.toolMode
+  if (mode !== 'polygon' && mode !== 'curve') return
+  const p = svgPointFromEvent(e)
+  clampToCanvas(p)
+  polyCursor.value = { x: p.x, y: p.y }
+}
+
+function polyFinish(closed: boolean) {
+  window.removeEventListener('mousemove', polyMove)
+  document.body.style.cursor = ''
+  const mode = editor.toolMode
+  const pts = polyPoints.value
+  polyPoints.value = []
+  polyCursor.value = null
+  if (pts.length < 2) return
+  // 生成世界坐标 d
+  let d: string
+  if (mode === 'curve') {
+    d = smoothPolylineToBezier(pts)
+  } else {
+    d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+  }
+  if (closed) d += ' Z'
+  // bbox
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  for (const p of pts) {
+    if (p.x < minX) minX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.x > maxX) maxX = p.x
+    if (p.y > maxY) maxY = p.y
+  }
+  if (!isFinite(minX)) return
+  const bbox = { x: minX, y: minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) }
+  editor.addFreeformPath(d, bbox, {
+    name: mode === 'polygon' ? t('shape.polygonDraw') : t('shape.curve'),
+    fill: mode === 'polygon' ? editor.brush.color : 'none',
+    stroke: editor.brush.color,
+    strokeWidth: editor.brush.width,
+  })
+}
+
+function polyCancel() {
+  window.removeEventListener('mousemove', polyMove)
+  document.body.style.cursor = ''
+  polyPoints.value = []
+  polyCursor.value = null
+}
+
+function polyUndoPoint() {
+  const pts = polyPoints.value
+  if (pts.length === 0) return
+  if (pts.length === 1) {
+    polyCancel()
+    return
+  }
+  pts.pop()
+}
+
+// 切换工具时取消未完成的绘制
+watch(
+  () => editor.toolMode,
+  (m, prev) => {
+    if (m !== 'polygon' && m !== 'curve' && (prev === 'polygon' || prev === 'curve')) {
+      polyCancel()
+    }
+  },
+)
+
 function onSvgMouseDown(e: MouseEvent) {
   // 画笔模式：直接开始画
   if (editor.toolMode === 'brush') {
     brushStart(e)
     return
   }
+  // 多边形 / 曲线：点击添加点
+  if (editor.toolMode === 'polygon' || editor.toolMode === 'curve') {
+    polyClick(e)
+    return
+  }
   // 空白处点击不做处理，用 canvas wrapper 的 self 事件处理
+}
+function onSvgDblClick(e: MouseEvent) {
+  // 多边形 / 曲线：双击完成绘制（多边形闭合，曲线开放）
+  if (editor.toolMode === 'polygon') {
+    e.preventDefault()
+    if (polyPoints.value.length >= 2) polyFinish(true)
+    return
+  }
+  if (editor.toolMode === 'curve') {
+    e.preventDefault()
+    if (polyPoints.value.length >= 2) polyFinish(false)
+    return
+  }
 }
 function onCanvasMouseDown(e: MouseEvent) {
   if (editor.toolMode === 'brush') {
     brushStart(e)
+    return
+  }
+  if (editor.toolMode === 'polygon' || editor.toolMode === 'curve') {
+    polyClick(e)
     return
   }
   editor.clearSelection()
@@ -486,6 +695,11 @@ function onShapeMouseDown(e: MouseEvent, s: Shape) {
   // 画笔模式下：即使点在图形上也开始画（不选中/拖动）
   if (editor.toolMode === 'brush') {
     brushStart(e)
+    return
+  }
+  // 多边形 / 曲线模式下：点图形也继续添加点
+  if (editor.toolMode === 'polygon' || editor.toolMode === 'curve') {
+    polyClick(e)
     return
   }
   if (!s.visible) return
@@ -667,6 +881,28 @@ function onKey(e: KeyboardEvent) {
     editor.setSelected(editor.shapes.filter((s) => s.visible).map((s) => s.id))
     return
   }
+  // 多边形 / 曲线 绘制中的交互键（须在通用 Delete/Backspace 之前）
+  if (editor.toolMode === 'polygon' || editor.toolMode === 'curve') {
+    if (key === 'Enter') {
+      e.preventDefault()
+      if (polyPoints.value.length >= 2) {
+        polyFinish(editor.toolMode === 'polygon')
+      }
+      return
+    }
+    if (key === 'Escape') {
+      e.preventDefault()
+      polyCancel()
+      return
+    }
+    if (key === 'Backspace') {
+      const tgt = e.target as HTMLElement
+      if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA')) return
+      e.preventDefault()
+      polyUndoPoint()
+      return
+    }
+  }
   if (key === 'Delete' || key === 'Backspace') {
     const tgt = e.target as HTMLElement
     if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA')) return
@@ -679,7 +915,7 @@ function onKey(e: KeyboardEvent) {
     editor.duplicateSelection()
     return
   }
-  // 工具切换快捷键：V 选择 / B 画笔
+  // 工具切换快捷键：V 选择 / B 画笔 / P 多边形 / C 曲线
   if (!meta && !e.shiftKey && !e.altKey) {
     const k = key.toLowerCase()
     if (k === 'v') {
@@ -688,6 +924,14 @@ function onKey(e: KeyboardEvent) {
     }
     if (k === 'b') {
       editor.setToolMode('brush')
+      return
+    }
+    if (k === 'p') {
+      editor.setToolMode('polygon')
+      return
+    }
+    if (k === 'c') {
+      editor.setToolMode('curve')
       return
     }
   }
@@ -843,6 +1087,9 @@ watch(
 .canvas-svg.cursor-brush {
   cursor: crosshair;
 }
+.canvas-svg.cursor-poly {
+  cursor: crosshair;
+}
 .shape-g {
   cursor: default;
 }
@@ -883,6 +1130,26 @@ watch(
   backdrop-filter: blur(4px);
   pointer-events: none;
   white-space: nowrap;
+}
+.draw-hint {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--fg);
+  font-size: 12px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--primary);
+  box-shadow: 0 4px 16px -4px rgba(99, 102, 241, 0.35);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  z-index: 60;
+  white-space: nowrap;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .text-edit-input {
   background: transparent;
