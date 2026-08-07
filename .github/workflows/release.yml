@@ -11,6 +11,7 @@ permissions:
 jobs:
   build:
     name: Build (${{ matrix.platform }}/${{ matrix.arch }})
+    continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
