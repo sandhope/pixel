@@ -143,7 +143,7 @@ const items: ShapeDef[] = [
   { type: 'polygon', labelKey: 'shape.polygon', icon: hexIcon('#F472B6') },
   { type: 'star', labelKey: 'shape.star', icon: starIcon('#FFE66D') },
   { type: 'path', labelKey: 'shape.path', icon: heartIcon('#EF4444') },
-  { type: 'text', labelKey: 'shape.text', icon: textIcon('#0f172a') },
+  { type: 'text', labelKey: 'shape.text', icon: textIcon('currentColor') },
 ]
 
 function rectIcon(c: string) {
@@ -284,6 +284,7 @@ const presets = [
   justify-content: center;
   margin-bottom: 4px;
   pointer-events: none;
+  color: var(--fg);
 }
 .shape-name {
   font-size: 12px;
