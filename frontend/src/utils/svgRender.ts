@@ -71,9 +71,10 @@ export function shapeInnerSvg(s: Shape): string {
       // 把 d 按 width/100, height/100 缩放，这样默认 path 是 100x100 viewBox，用户调整尺寸时 path 会跟着缩放
       const sx = s.width / 100
       const sy = s.height / 100
+      const ve = s.strokeWidth > 0 ? ' vector-effect="non-scaling-stroke"' : ''
       return (
         `<g transform="scale(${fmtNumber(sx)},${fmtNumber(sy)})">` +
-        `<path d="${s.d}"${common}/>` +
+        `<path d="${s.d}"${common}${ve}/>` +
         `</g>`
       )
     }

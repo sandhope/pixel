@@ -1,6 +1,34 @@
 <template>
   <header class="toolbar">
     <div class="actions">
+      <!-- 工具模式切换 -->
+      <button
+        class="tb tool-btn"
+        :class="{ active: editor.toolMode === 'select' }"
+        @click="editor.setToolMode('select')"
+        :title="t('toolbar.tool.select.tip')"
+      >
+        <svg class="tb-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path>
+        </svg>
+        {{ t('toolbar.tool.select') }}
+      </button>
+      <button
+        class="tb tool-btn"
+        :class="{ active: editor.toolMode === 'brush' }"
+        @click="editor.setToolMode('brush')"
+        :title="t('toolbar.tool.brush.tip')"
+      >
+        <svg class="tb-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+          <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+          <path d="M2 2l7.586 7.586"></path>
+          <circle cx="11" cy="11" r="2"></circle>
+        </svg>
+        {{ t('toolbar.tool.brush') }}
+      </button>
+      <span class="sep"></span>
+
       <button class="tb" @click="undo" :disabled="!editor.canUndo" :title="t('toolbar.undo.tip')">{{ t('toolbar.undo') }}</button>
       <button class="tb" @click="redo" :disabled="!editor.canRedo" :title="t('toolbar.redo.tip')">{{ t('toolbar.redo') }}</button>
       <span class="sep"></span>
@@ -39,6 +67,26 @@
       <span>{{ editor.shapeCount }} {{ t('toolbar.layers') }}</span>
       <span v-if="busy" class="busy">{{ t('toolbar.processing') }}</span>
     </div>
+
+    <!-- 画笔设置浮动面板 -->
+    <Transition name="brush-pop">
+      <div v-if="editor.toolMode === 'brush'" class="brush-popover">
+        <div class="brush-field" :title="t('toolbar.brush.color.tip')">
+          <span class="brush-label">{{ t('toolbar.brush.color') }}</span>
+          <input type="color" :value="editor.brush.color" @input="onBrushColor" class="brush-color" />
+        </div>
+        <div class="brush-field" :title="t('toolbar.brush.width.tip')">
+          <span class="brush-label">{{ t('toolbar.brush.width') }}</span>
+          <input type="range" min="1" max="60" step="1" :value="editor.brush.width" @input="onBrushWidth" class="brush-range" />
+          <span class="brush-val">{{ editor.brush.width }}</span>
+        </div>
+        <div class="brush-field" :title="t('toolbar.brush.opacity.tip')">
+          <span class="brush-label">{{ t('toolbar.brush.opacity') }}</span>
+          <input type="range" min="0.1" max="1" step="0.05" :value="editor.brush.opacity" @input="onBrushOpacity" class="brush-range" />
+          <span class="brush-val">{{ Math.round(editor.brush.opacity * 100) }}%</span>
+        </div>
+      </div>
+    </Transition>
   </header>
 </template>
 
@@ -52,6 +100,19 @@ import { t } from '@/i18n'
 const editor = useEditorStore()
 const exportScale = ref(2)
 const busy = ref(false)
+
+function onBrushColor(e: Event) {
+  const v = (e.target as HTMLInputElement).value
+  editor.setBrush({ color: v })
+}
+function onBrushWidth(e: Event) {
+  const v = parseFloat((e.target as HTMLInputElement).value)
+  if (!isNaN(v)) editor.setBrush({ width: v })
+}
+function onBrushOpacity(e: Event) {
+  const v = parseFloat((e.target as HTMLInputElement).value)
+  if (!isNaN(v)) editor.setBrush({ opacity: v })
+}
 
 function undo() {
   editor.undo()
@@ -164,6 +225,7 @@ function toast(msg: string) {
   align-items: center;
   gap: 12px;
   color: var(--fg);
+  position: relative;
 }
 
 .actions {
@@ -176,6 +238,64 @@ function toast(msg: string) {
 }
 .actions::-webkit-scrollbar {
   display: none;
+}
+.tool-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.brush-popover {
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  margin-top: 6px;
+}
+.brush-pop-enter-active,
+.brush-pop-leave-active {
+  transition: all 0.18s ease;
+}
+.brush-pop-enter-from,
+.brush-pop-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+.brush-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.brush-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.brush-color {
+  width: 26px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.brush-range {
+  width: 100px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.brush-val {
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 36px;
+  text-align: right;
 }
 .tb {
   display: inline-flex;

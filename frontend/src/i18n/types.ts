@@ -25,6 +25,12 @@ export interface LocaleMessages {
   'toolbar.settings': string
   // shape panel
   'panel.shapes': string
+  'panel.shapeLibrary': string
+  'panel.shapeLibrary.desc': string
+  'panel.search.placeholder': string
+  'panel.search.empty': string
+  'panel.shapesCount': string
+  'panel.libHint': string
   'panel.canvas': string
   'panel.width': string
   'panel.height': string
@@ -41,8 +47,20 @@ export interface LocaleMessages {
   'shape.star': string
   'shape.polygon': string
   'shape.path': string
+  'shape.brush': string
   'shape.text': string
   'shape.default': string
+  // toolbar tools & brush
+  'toolbar.tool.select': string
+  'toolbar.tool.select.tip': string
+  'toolbar.tool.brush': string
+  'toolbar.tool.brush.tip': string
+  'toolbar.brush.color': string
+  'toolbar.brush.color.tip': string
+  'toolbar.brush.width': string
+  'toolbar.brush.width.tip': string
+  'toolbar.brush.opacity': string
+  'toolbar.brush.opacity.tip': string
   // editor canvas
   'canvas.empty.hint': string
   // right panel

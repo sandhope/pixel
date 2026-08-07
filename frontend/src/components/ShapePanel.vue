@@ -1,5 +1,6 @@
 <template>
   <div class="shape-panel">
+    <!-- 基础图形 -->
     <div class="panel-title">{{ t('panel.shapes') }}</div>
     <div class="shape-grid">
       <div
@@ -8,11 +9,34 @@
         class="shape-item"
         draggable="true"
         @click="onClick(item.type)"
-        @dragstart="onDragStart($event, item.type)"
+        @dragstart="onDragStartBasic($event, item.type)"
       >
         <div class="shape-icon" v-html="item.icon"></div>
         <div class="shape-name">{{ t(item.labelKey) }}</div>
       </div>
+    </div>
+
+    <!-- 分类图形库入口按钮 -->
+    <div class="lib-entry">
+      <button class="lib-entry-btn" @click="$emit('open-lib')">
+        <div class="lib-entry-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+        </div>
+        <div class="lib-entry-text">
+          <span class="lib-entry-title">{{ t('panel.shapeLibrary') }}</span>
+          <span class="lib-entry-desc">{{ t('panel.shapeLibrary.desc') }}</span>
+        </div>
+        <div class="lib-entry-arrow">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
+      </button>
     </div>
 
     <div class="panel-title" style="margin-top: 20px">{{ t('panel.canvas') }}</div>
@@ -56,6 +80,8 @@ import { useEditorStore } from '@/store/editor'
 import { t } from '@/i18n'
 import type { LocaleMessages } from '@/i18n/types'
 import type { ShapeType } from '@/types/shapes'
+
+defineEmits<{ 'open-lib': [] }>()
 
 const editor = useEditorStore()
 
@@ -108,7 +134,7 @@ function textIcon(c: string) {
 function onClick(t2: ShapeType) {
   editor.addShapeByType(t2, 120 + Math.random() * 100, 100 + Math.random() * 100)
 }
-function onDragStart(e: DragEvent, t2: ShapeType) {
+function onDragStartBasic(e: DragEvent, t2: ShapeType) {
   if (!e.dataTransfer) return
   e.dataTransfer.setData('application/x-pixel-shape', t2)
   e.dataTransfer.effectAllowed = 'copy'
@@ -133,11 +159,11 @@ function applyPreset(p: { w: number; h: number; name: string }) {
   editor.setCanvas({ width: p.w, height: p.h })
 }
 const presets = [
-  { name: '512x512', w: 512, h: 512 },
-  { name: '1024x1024', w: 1024, h: 1024 },
-  { name: '1920x1080', w: 1920, h: 1080 },
-  { name: '1200x630', w: 1200, h: 630 },
-  { name: '800x600', w: 800, h: 600 },
+  { name: '512×512', w: 512, h: 512 },
+  { name: '1024×1024', w: 1024, h: 1024 },
+  { name: '1920×1080', w: 1920, h: 1080 },
+  { name: '1200×630', w: 1200, h: 630 },
+  { name: '800×600', w: 800, h: 600 },
 ]
 </script>
 
@@ -186,6 +212,69 @@ const presets = [
 .shape-name {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+/* 图形库入口 */
+.lib-entry {
+  margin-top: 16px;
+}
+.lib-entry-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, var(--primary-glow) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+}
+.lib-entry-btn:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -6px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+.lib-entry-btn:active {
+  transform: translateY(0);
+}
+.lib-entry-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: white;
+  border-radius: 8px;
+}
+.lib-entry-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lib-entry-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.lib-entry-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lib-entry-arrow {
+  color: var(--text-dim);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .field-row {

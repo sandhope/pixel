@@ -26,6 +26,7 @@
       <svg
         ref="svgEl"
         class="canvas-svg"
+        :class="{ 'cursor-brush': editor.toolMode === 'brush' }"
         :width="editor.canvas.width"
         :height="editor.canvas.height"
         :viewBox="`0 0 ${editor.canvas.width} ${editor.canvas.height}`"
@@ -62,8 +63,22 @@
           ></g>
         </g>
 
+        <!-- 正在绘制的画笔预览 path -->
+        <path
+          v-if="brushPreviewD"
+          :d="brushPreviewD"
+          fill="none"
+          :stroke="editor.brush.color"
+          :stroke-width="editor.brush.width"
+          :opacity="editor.brush.opacity"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          vector-effect="non-scaling-stroke"
+          pointer-events="none"
+        />
+
         <!-- 选中外框 & 操作手柄 -->
-        <template v-if="box != null">
+        <template v-if="box != null && editor.toolMode === 'select'">
           <!-- 外边框 + 十字旋转杆 -->
           <g :transform="`translate(${box.x},${box.y}) rotate(${box.rotation}, ${box.w / 2}, ${box.h / 2})`">
             <rect
@@ -134,6 +149,23 @@
     <div class="canvas-hint" v-if="editor.shapes.length === 0">
       {{ t('canvas.empty.hint') }}
     </div>
+
+    <!-- 底部调色板 -->
+    <div class="palette-bar">
+      <div class="palette-current" :style="{ background: editor.brush.color }" :title="editor.brush.color">
+        <input type="color" :value="editor.brush.color" @input="onPaletteCurrentChange" class="palette-color-input" />
+      </div>
+      <div class="palette-strip">
+        <div
+          v-for="c in presetColors"
+          :key="c"
+          class="palette-dot"
+          :style="{ background: c }"
+          :title="c"
+          @click="onPaletteDotClick(c)"
+        ></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -148,6 +180,44 @@ const editor = useEditorStore()
 
 const viewportEl = ref<HTMLDivElement>()
 const svgEl = ref<SVGSVGElement>()
+
+// 底部调色板
+const presetColors = [
+  '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#d9d9d9', '#efefef', '#ffffff',
+  '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#9900ff', '#ff00ff',
+  '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6', '#e91e63',
+  '#f39c12', '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#c0392b', '#7f8c8d', '#1a1a2e',
+]
+function onPaletteCurrentChange(e: Event) {
+  const color = (e.target as HTMLInputElement).value
+  if (!color) return
+  // 同步应用到选中图形
+  if (editor.selectedShapes.length > 0 && editor.toolMode === 'select') {
+    editor.commit()
+    for (const s of editor.selectedShapes) {
+      if (s.type === 'line' || (s.stroke && s.stroke !== 'none' && (!s.fill || s.fill === 'none'))) {
+        editor.updateShape(s.id, { stroke: color })
+      } else {
+        editor.updateShape(s.id, { fill: color })
+      }
+    }
+  }
+  editor.setBrush({ color })
+}
+function onPaletteDotClick(color: string) {
+  // 选中图形时修改图形颜色，同时更新画笔颜色
+  if (editor.selectedShapes.length > 0 && editor.toolMode === 'select') {
+    editor.commit()
+    for (const s of editor.selectedShapes) {
+      if (s.type === 'line' || (s.stroke && s.stroke !== 'none' && (!s.fill || s.fill === 'none'))) {
+        editor.updateShape(s.id, { stroke: color })
+      } else {
+        editor.updateShape(s.id, { fill: color })
+      }
+    }
+  }
+  editor.setBrush({ color })
+}
 
 // 文字编辑状态
 const editingTextId = ref<string | null>(null)
@@ -168,6 +238,53 @@ const box = computed<SelBox | null>(() => {
   if (!s) return null
   return { x: s.x, y: s.y, w: s.width, h: s.height, rotation: s.rotation, locked: s.locked }
 })
+
+// ---------- 画笔状态 ----------
+const brushPoints = ref<{ x: number; y: number }[]>([])
+const brushPreviewD = computed(() => {
+  const pts = brushPoints.value
+  if (pts.length === 0) return ''
+  if (pts.length === 1) {
+    const p = pts[0]
+    // 单点时画一个圆点（通过一个极小的 L）
+    return `M ${p.x} ${p.y} L ${p.x + 0.01} ${p.y + 0.01}`
+  }
+  // 直接使用折线，保持简单（Method-Draw 用的是 smoothing，这里先直连）
+  let d = `M ${pts[0].x} ${pts[0].y}`
+  for (let i = 1; i < pts.length; i++) {
+    d += ` L ${pts[i].x} ${pts[i].y}`
+  }
+  return d
+})
+
+/**
+ * 对折线进行平滑：将多段直线转换为三次贝塞尔曲线（Catmull-Rom → Bezier）
+ * 借鉴 Method-Draw 的思路，但简化实现
+ */
+function smoothPolylineToBezier(pts: { x: number; y: number }[]): string {
+  if (pts.length < 2) {
+    if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y} L ${pts[0].x} ${pts[0].y}`
+    return ''
+  }
+  if (pts.length === 2) {
+    return `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y}`
+  }
+  let d = `M ${pts[0].x} ${pts[0].y}`
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i]
+    const p1 = pts[i]
+    const p2 = pts[i + 1]
+    const p3 = pts[i + 2] || p2
+    // 张力（越大越弯曲）
+    const t = 0.25
+    const cp1x = p1.x + (p2.x - p0.x) * t
+    const cp1y = p1.y + (p2.y - p0.y) * t
+    const cp2x = p2.x - (p3.x - p1.x) * t
+    const cp2y = p2.y - (p3.y - p1.y) * t
+    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`
+  }
+  return d
+}
 
 // 正在编辑的文字形状
 const editingTextShape = computed(() => {
@@ -290,15 +407,87 @@ function svgPointFromEvent(e: MouseEvent): { x: number; y: number } {
   return { x: p.x, y: p.y }
 }
 
-function onSvgMouseDown() {
+// ---------- 画笔绘制事件 ----------
+function brushStart(e: MouseEvent) {
+  if (editor.toolMode !== 'brush') return
+  const p = svgPointFromEvent(e)
+  // 限制在画布范围内
+  if (p.x < 0) p.x = 0
+  if (p.y < 0) p.y = 0
+  if (p.x > editor.canvas.width) p.x = editor.canvas.width
+  if (p.y > editor.canvas.height) p.y = editor.canvas.height
+  editor.commit() // 把之前的状态保存
+  brushPoints.value = [{ x: p.x, y: p.y }]
+  document.body.style.cursor = 'crosshair'
+  window.addEventListener('mousemove', brushMove)
+  window.addEventListener('mouseup', brushEnd)
+  // 阻止冒泡，避免触发 shape/canvas 的其它选择
+  e.preventDefault()
+}
+function brushMove(e: MouseEvent) {
+  if (editor.toolMode !== 'brush') return
+  const p = svgPointFromEvent(e)
+  if (p.x < 0) p.x = 0
+  if (p.y < 0) p.y = 0
+  if (p.x > editor.canvas.width) p.x = editor.canvas.width
+  if (p.y > editor.canvas.height) p.y = editor.canvas.height
+  brushPoints.value.push({ x: p.x, y: p.y })
+}
+function brushEnd() {
+  window.removeEventListener('mousemove', brushMove)
+  window.removeEventListener('mouseup', brushEnd)
+  document.body.style.cursor = ''
+  const pts = brushPoints.value
+  brushPoints.value = []
+  if (editor.toolMode !== 'brush') return
+  if (pts.length === 0) return
+  // 至少 2 个点（包括单点点击的情况）
+  const d = smoothPolylineToBezier(pts)
+  if (!d) return
+  // 计算 bbox（使用路径实际范围，不扩展描边余量）
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity
+  for (const p of pts) {
+    if (p.x < minX) minX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.x > maxX) maxX = p.x
+    if (p.y > maxY) maxY = p.y
+  }
+  if (!isFinite(minX)) return
+  const bbox = {
+    x: minX,
+    y: minY,
+    w: Math.max(1, maxX - minX),
+    h: Math.max(1, maxY - minY),
+  }
+  editor.addBrushPath(d, bbox)
+}
+
+function onSvgMouseDown(e: MouseEvent) {
+  // 画笔模式：直接开始画
+  if (editor.toolMode === 'brush') {
+    brushStart(e)
+    return
+  }
   // 空白处点击不做处理，用 canvas wrapper 的 self 事件处理
 }
 function onCanvasMouseDown(e: MouseEvent) {
+  if (editor.toolMode === 'brush') {
+    brushStart(e)
+    return
+  }
   editor.clearSelection()
   focusViewport()
 }
 
 function onShapeMouseDown(e: MouseEvent, s: Shape) {
+  // 画笔模式下：即使点在图形上也开始画（不选中/拖动）
+  if (editor.toolMode === 'brush') {
+    brushStart(e)
+    return
+  }
   if (!s.visible) return
   const additive = e.shiftKey || e.metaKey || e.ctrlKey
   if (s.locked) {
@@ -459,6 +648,7 @@ function onMouseUp() {
 function focusViewport() {
   nextTick(() => viewportEl.value?.focus())
 }
+
 function onKey(e: KeyboardEvent) {
   const key = e.key
   const meta = e.metaKey || e.ctrlKey
@@ -489,6 +679,18 @@ function onKey(e: KeyboardEvent) {
     editor.duplicateSelection()
     return
   }
+  // 工具切换快捷键：V 选择 / B 画笔
+  if (!meta && !e.shiftKey && !e.altKey) {
+    const k = key.toLowerCase()
+    if (k === 'v') {
+      editor.setToolMode('select')
+      return
+    }
+    if (k === 'b') {
+      editor.setToolMode('brush')
+      return
+    }
+  }
   // 方向键：移动选中 1px；Shift 移动 10px
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
     const tgt = e.target as HTMLElement
@@ -508,7 +710,7 @@ function onKey(e: KeyboardEvent) {
   }
 }
 
-// ---------- 拖放：从左侧图形库放进来 ----------
+// ---------- 拖放：从左侧基础图形面板拖入 ----------
 function onDragOver(e: DragEvent) {
   if (!e.dataTransfer) return
   if (e.dataTransfer.types.includes('application/x-pixel-shape')) {
@@ -518,10 +720,10 @@ function onDragOver(e: DragEvent) {
 function onDrop(e: DragEvent) {
   if (!e.dataTransfer) return
   const shapeType = e.dataTransfer.getData('application/x-pixel-shape') as ShapeType
-  if (!shapeType) return
-  // 把 drop 点转换为 svg 坐标
-  const p = svgPointFromEvent(e as any)
-  editor.insertShapeAt(shapeType, p.x, p.y)
+  if (shapeType) {
+    const p = svgPointFromEvent(e as any)
+    editor.insertShapeAt(shapeType, p.x, p.y)
+  }
 }
 
 // ---------- 文字双击编辑 ----------
@@ -638,6 +840,9 @@ watch(
   position: relative;
   display: block;
 }
+.canvas-svg.cursor-brush {
+  cursor: crosshair;
+}
 .shape-g {
   cursor: default;
 }
@@ -692,5 +897,63 @@ watch(
 }
 .text-edit-input::selection {
   background: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+/* 底部调色板 */
+.palette-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+}
+.palette-current {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.12s;
+}
+.palette-current:hover {
+  transform: scale(1.08);
+}
+.palette-color-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+.palette-strip {
+  display: flex;
+  gap: 3px;
+}
+.palette-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.palette-dot:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 2px var(--primary);
+  z-index: 1;
 }
 </style>

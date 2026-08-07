@@ -4,7 +4,7 @@
     <Toolbar />
     <div class="body">
       <aside class="left-pane">
-        <ShapePanel />
+        <ShapePanel @open-lib="showLib = true" />
       </aside>
       <main class="center-pane">
         <EditorCanvas />
@@ -13,6 +13,7 @@
     </div>
     <SettingsDialog :visible="showSettings" @close="showSettings = false" />
     <AboutDialog v-if="showAbout" @close="showAbout = false" />
+    <ShapeLibDialog :visible="showLib" @close="showLib = false" />
   </div>
 </template>
 
@@ -25,9 +26,11 @@ import EditorCanvas from '@/components/EditorCanvas.vue'
 import RightPanel from '@/components/RightPanel.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
 import AboutDialog from '@/components/AboutDialog.vue'
+import ShapeLibDialog from '@/components/ShapeLibDialog.vue'
 
 const showSettings = ref(false)
 const showAbout = ref(false)
+const showLib = ref(false)
 </script>
 
 <style scoped>

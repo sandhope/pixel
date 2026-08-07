@@ -2,9 +2,17 @@ import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import type { ProjectState, Shape, CanvasSettings, ShapeType } from '@/types/shapes'
-import { createShape } from '@/utils/shapeFactory'
+import { createShape, createPathFromD } from '@/utils/shapeFactory'
 import { buildExportSvg } from '@/utils/exportSvg'
 import { t } from '@/i18n'
+
+export type ToolMode = 'select' | 'brush'
+
+export interface BrushSettings {
+  color: string
+  width: number
+  opacity: number
+}
 
 const STORAGE_KEY = 'pixel-editor-state-v1'
 
@@ -31,6 +39,14 @@ export const useEditorStore = defineStore('editor', () => {
   const canvas = ref<CanvasSettings>(defaultCanvas())
   const selectedIds = ref<string[]>([])
   const dirty = ref(false)
+
+  // ----- 工具模式 & 画笔设置 -----
+  const toolMode = ref<ToolMode>('select')
+  const brush = ref<BrushSettings>({
+    color: '#0f172a',
+    width: 4,
+    opacity: 1,
+  })
 
   // ----- history (简单 undo/redo，最多 50 步) -----
   // 注意：必须用 ref 包裹，computed 才能追踪长度变化，否则按钮永远 disabled
@@ -213,6 +229,61 @@ export const useEditorStore = defineStore('editor', () => {
     shapes.value = []
     selectedIds.value = []
   }
+  // ----- 工具模式 & 画笔 -----
+  function setToolMode(mode: ToolMode) {
+    toolMode.value = mode
+  }
+  function setBrush(patch: Partial<BrushSettings>) {
+    Object.assign(brush.value, patch)
+  }
+  /**
+   * 从图形库添加自定义 path
+   * @param d 源 SVG path d
+   * @param sourceSize 源尺寸
+   * @param x 画布位置 x
+   * @param y 画布位置 y
+   * @param width 目标宽
+   * @param height 目标高
+   */
+  function addLibraryShape(params: {
+    d: string
+    sourceSize?: number
+    name?: string
+    x?: number
+    y?: number
+    width?: number
+    height?: number
+  }) {
+    const { d, sourceSize, name, x = 100 + Math.random() * 80, y = 100 + Math.random() * 80, width = 120, height = 120 } = params
+    const s = createPathFromD(d, { sourceSize, name, x, y, width, height })
+    addShape(s)
+    return s
+  }
+  /**
+   * 添加画笔绘制的 path（仅描边）
+   * @param pathD SVG path d（世界坐标下）
+   * @param bbox 包围盒 {x,y,w,h} 世界坐标
+   */
+  function addBrushPath(pathD: string, bbox: { x: number; y: number; w: number; h: number }) {
+    // 转换 d 中的坐标：减去 bbox.x/y，变成局部坐标，并归一化到 0-100 空间
+    const w = Math.max(1, bbox.w)
+    const h = Math.max(1, bbox.h)
+    const localD = shiftAndScalePathD(pathD, -bbox.x, -bbox.y, 100 / w, 100 / h)
+    const s = createPathFromD(localD, {
+      sourceSize: 100,
+      name: t('shape.brush'),
+      x: bbox.x,
+      y: bbox.y,
+      width: w,
+      height: h,
+      fill: 'none',
+      stroke: brush.value.color,
+      strokeWidth: brush.value.width,
+    })
+    s.opacity = brush.value.opacity
+    addShape(s)
+    return s
+  }
   function loadProjectJSON(json: string) {
     try {
       const p = JSON.parse(json) as ProjectState
@@ -273,12 +344,31 @@ export const useEditorStore = defineStore('editor', () => {
     dirty.value = true
   }
 
+  // ----- path 辅助函数（内部用）-----
+  /**
+   * 对 SVG path d 中的所有坐标做 (dx + x*sx, dy + y*sy)
+   * 仅用于 M/L/C/S/Q/T/A 里的绝对坐标数字（相对坐标 m/l/c/... 会乘 sx/sy）
+   * 这里做简化处理：对所有数字都做 translate + scale，因为画笔产出的是绝对坐标折线
+   */
+  function shiftAndScalePathD(d: string, dx: number, dy: number, sx: number, sy: number): string {
+    return d.replace(/([a-zA-Z]?)([\s,]*)([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)([\s,]+)([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/g, (_m, cmd, sp1, xStr, sp2, yStr) => {
+      const x = parseFloat(xStr)
+      const y = parseFloat(yStr)
+      if (isNaN(x) || isNaN(y)) return _m
+      const nx = ((x + dx) * sx).toFixed(4).replace(/\.?0+$/, '')
+      const ny = ((y + dy) * sy).toFixed(4).replace(/\.?0+$/, '')
+      return `${cmd || ''}${sp1}${nx}${sp2}${ny}`
+    })
+  }
+
   return {
     // state
     shapes,
     canvas,
     selectedIds,
     dirty,
+    toolMode,
+    brush,
     // selectors
     selectedShapes,
     activeShape,
@@ -309,5 +399,9 @@ export const useEditorStore = defineStore('editor', () => {
     undo,
     redo,
     commit,
+    setToolMode,
+    setBrush,
+    addLibraryShape,
+    addBrushPath,
   }
 })
