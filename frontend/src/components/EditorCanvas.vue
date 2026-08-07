@@ -4,6 +4,7 @@
     class="canvas-viewport"
     @dragover.prevent="onDragOver"
     @drop="onDrop"
+    @wheel="onWheel"
     @keydown="onKey"
     tabindex="0"
   >
@@ -30,8 +31,8 @@
           'cursor-brush': editor.toolMode === 'brush',
           'cursor-poly': editor.toolMode === 'polygon' || editor.toolMode === 'curve',
         }"
-        :width="editor.canvas.width"
-        :height="editor.canvas.height"
+        :width="editor.canvas.width * zoom"
+        :height="editor.canvas.height * zoom"
         :viewBox="`0 0 ${editor.canvas.width} ${editor.canvas.height}`"
         @mousedown="onSvgMouseDown"
         @dblclick="onSvgDblClick"
@@ -131,10 +132,10 @@
             <rect
               v-for="h in scaleHandles"
               :key="'s' + h.pos"
-              :x="h.x - 5"
-              :y="h.y - 5"
-              width="10"
-              height="10"
+              :x="h.x - 5 / zoom"
+              :y="h.y - 5 / zoom"
+              :width="10 / zoom"
+              :height="10 / zoom"
               fill="#fff"
               stroke="#6366f1"
               stroke-width="1.5"
@@ -142,20 +143,20 @@
               :style="{ cursor: h.cursor }"
               @mousedown.stop="onScaleHandleDown($event, h.pos)"
             />
-            <!-- 旋转手柄：顶部中点往上延伸 24px -->
+            <!-- 旋转手柄：顶部中点往上延伸 -->
             <line
               :x1="box.w / 2"
               y1="0"
               :x2="box.w / 2"
-              y2="-28"
+              :y2="-28 / zoom"
               stroke="#6366f1"
               stroke-width="1.5"
               vector-effect="non-scaling-stroke"
             />
             <circle
               :cx="box.w / 2"
-              :cy="-28"
-              r="7"
+              :cy="-28 / zoom"
+              :r="7 / zoom"
               fill="#fff"
               stroke="#6366f1"
               stroke-width="1.5"
@@ -205,6 +206,13 @@
         ></div>
       </div>
     </div>
+
+    <!-- 缩放控制 -->
+    <div class="zoom-bar">
+      <button class="zoom-btn" @click="zoomOut" :disabled="zoom <= 0.1" :title="t('canvas.zoom.out')">−</button>
+      <button class="zoom-level" @click="zoomReset" :title="t('canvas.zoom.reset')">{{ Math.round(zoom * 100) }}%</button>
+      <button class="zoom-btn" @click="zoomIn" :disabled="zoom >= 8" :title="t('canvas.zoom.in')">+</button>
+    </div>
   </div>
 </template>
 
@@ -219,6 +227,55 @@ const editor = useEditorStore()
 
 const viewportEl = ref<HTMLDivElement>()
 const svgEl = ref<SVGSVGElement>()
+
+// ---------- 画布缩放 ----------
+const zoom = ref(1)
+const ZOOM_MIN = 0.1
+const ZOOM_MAX = 8
+const ZOOM_STEP = 1.15
+
+function clampZoom(v: number): number {
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, v))
+}
+
+function zoomIn() {
+  zoom.value = clampZoom(zoom.value * ZOOM_STEP)
+}
+function zoomOut() {
+  zoom.value = clampZoom(zoom.value / ZOOM_STEP)
+}
+function zoomReset() {
+  zoom.value = 1
+}
+
+/** ctrl+wheel 缩放，以光标位置为锚点 */
+function onWheel(e: WheelEvent) {
+  if (!e.ctrlKey) return // 非 ctrl 时让浏览器正常滚动
+  e.preventDefault()
+  const oldZoom = zoom.value
+  const factor = e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP
+  const newZoom = clampZoom(oldZoom * factor)
+  if (newZoom === oldZoom) return
+
+  // 记录光标下的 SVG 坐标
+  const svgPt = svgPointFromEvent(e as unknown as MouseEvent)
+
+  zoom.value = newZoom
+
+  // 缩放后调整滚动位置，使同一 SVG 点仍在光标下
+  requestAnimationFrame(() => {
+    if (!svgEl.value || !viewportEl.value) return
+    const ctm = svgEl.value.getScreenCTM()
+    if (!ctm) return
+    const pt = svgEl.value.createSVGPoint()
+    pt.x = svgPt.x
+    pt.y = svgPt.y
+    const screen = pt.matrixTransform(ctm)
+    const rect = viewportEl.value.getBoundingClientRect()
+    viewportEl.value.scrollLeft += screen.x - e.clientX
+    viewportEl.value.scrollTop += screen.y - e.clientY
+  })
+}
 
 // 底部调色板
 const presetColors = [
@@ -335,17 +392,18 @@ const editingTextShape = computed(() => {
 const editingInputStyle = computed(() => {
   const s = editingTextShape.value
   if (!s) return {}
+  const z = zoom.value
   const weight = s.fontWeight
   const align = s.textAlign || 'left'
   return {
-    left: `${s.x}px`,
-    top: `${s.y}px`,
-    width: `${s.width}px`,
-    height: `${s.height}px`,
+    left: `${s.x * z}px`,
+    top: `${s.y * z}px`,
+    width: `${s.width * z}px`,
+    height: `${s.height * z}px`,
     transform: `rotate(${s.rotation || 0}deg)`,
     transformOrigin: 'center center',
     position: 'absolute' as const,
-    fontSize: `${s.fontSize}px`,
+    fontSize: `${s.fontSize * z}px`,
     fontFamily: s.fontFamily,
     fontWeight: weight,
     textAlign: align,
@@ -368,8 +426,8 @@ const gradientDefsHtml = computed(() => collectGradientDefs(editor.shapes))
 // 画布 wrapper 尺寸：固定，外层做 auto fit
 const canvasWrapperStyle = computed(() => {
   return {
-    width: editor.canvas.width + 'px',
-    height: editor.canvas.height + 'px',
+    width: editor.canvas.width * zoom.value + 'px',
+    height: editor.canvas.height * zoom.value + 'px',
   }
 })
 
@@ -887,6 +945,22 @@ function onKey(e: KeyboardEvent) {
     editor.setSelected(editor.shapes.filter((s) => s.visible).map((s) => s.id))
     return
   }
+  // 缩放快捷键
+  if (meta && (key === '=' || key === '+')) {
+    e.preventDefault()
+    zoomIn()
+    return
+  }
+  if (meta && key === '-') {
+    e.preventDefault()
+    zoomOut()
+    return
+  }
+  if (meta && key === '0') {
+    e.preventDefault()
+    zoomReset()
+    return
+  }
   // 多边形 / 曲线 绘制中的交互键（须在通用 Delete/Backspace 之前）
   if (editor.toolMode === 'polygon' || editor.toolMode === 'curve') {
     if (key === 'Enter') {
@@ -1058,15 +1132,15 @@ watch(
     var(--bg);
   padding: 40px;
   display: flex;
-  align-items: center;
-  justify-content: center;
   outline: none;
 }
 .canvas-wrapper {
   position: relative;
+  margin: auto;
   box-shadow: var(--shadow), 0 0 0 1px var(--border);
   border-radius: 2px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 .checker-bg {
   position: absolute;
@@ -1177,8 +1251,7 @@ watch(
 .palette-bar {
   position: absolute;
   bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1229,5 +1302,59 @@ watch(
   transform: scale(1.3);
   box-shadow: 0 0 0 2px var(--primary);
   z-index: 1;
+}
+
+/* 缩放控制 */
+.zoom-bar {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+}
+.zoom-btn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 16px;
+  line-height: 1;
+  padding-bottom: 3px;
+  cursor: pointer;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+}
+.zoom-btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.zoom-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.zoom-level {
+  min-width: 48px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.zoom-level:hover {
+  background: var(--surface-2);
 }
 </style>

@@ -179,4 +179,8 @@ export interface LocaleMessages {
   'gradient.angle': string
   'gradient.addStop': string
   'gradient.stops': string
+  // zoom
+  'canvas.zoom.in': string
+  'canvas.zoom.out': string
+  'canvas.zoom.reset': string
 }

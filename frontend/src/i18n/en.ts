@@ -179,6 +179,10 @@ const en: LocaleMessages = {
   'gradient.angle': 'Angle',
   'gradient.addStop': '+ Add stop',
   'gradient.stops': 'Stops',
+  // zoom
+  'canvas.zoom.in': 'Zoom in',
+  'canvas.zoom.out': 'Zoom out',
+  'canvas.zoom.reset': 'Reset zoom',
 }
 
 export default en

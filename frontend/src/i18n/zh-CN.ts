@@ -179,6 +179,10 @@ const zhCN: LocaleMessages = {
   'gradient.angle': '角度',
   'gradient.addStop': '+ 添加色标',
   'gradient.stops': '色标',
+  // zoom
+  'canvas.zoom.in': '放大',
+  'canvas.zoom.out': '缩小',
+  'canvas.zoom.reset': '重置缩放',
 }
 
 export default zhCN
